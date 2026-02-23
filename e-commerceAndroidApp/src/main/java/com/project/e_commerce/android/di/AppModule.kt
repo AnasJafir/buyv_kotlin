@@ -39,6 +39,7 @@ import com.project.e_commerce.android.domain.usecase.CreateNotificationUseCase
 import com.project.e_commerce.android.presentation.services.NotificationManagerService
 import com.project.e_commerce.android.data.remote.api.CountriesApi
 import com.project.e_commerce.android.data.remote.interceptor.AuthInterceptor
+import com.project.e_commerce.data.remote.ApiEnvironment
 import com.project.e_commerce.android.domain.usecase.GetUserReelsUseCase
 import com.project.e_commerce.android.domain.usecase.UpdateUserProfileUseCase
 import com.project.e_commerce.android.domain.usecase.GetUserBookmarkedPostsUseCase
@@ -560,7 +561,7 @@ val viewModelModule = module {
             
             Retrofit.Builder()
                 .client(okHttp)
-                .baseUrl("http://192.168.11.108:8000/") // Correct Backend URL
+                .baseUrl(ApiEnvironment.baseUrl.trimEnd('/') + "/") // Dynamic: DEV=local, PROD=Railway
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
         }
