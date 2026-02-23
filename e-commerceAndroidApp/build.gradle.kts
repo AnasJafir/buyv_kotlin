@@ -50,10 +50,20 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file(localProperties.getProperty("keystore.path", "e-commerceAndroidApp/buyv-release.keystore"))
+            storePassword = localProperties.getProperty("keystore.password", "")
+            keyAlias = localProperties.getProperty("keystore.alias", "buyv")
+            keyPassword = localProperties.getProperty("keystore.key.password", "")
+        }
+    }
+
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -61,6 +71,8 @@ android {
         }
         getByName("debug") {
             isMinifyEnabled = false
+            // Sign with release key so the APK can be installed on any device (no developer options needed)
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -71,6 +83,7 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+        freeCompilerArgs += listOf("-Xjvm-default=all")
     }
 
     testOptions {

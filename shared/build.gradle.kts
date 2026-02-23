@@ -12,7 +12,15 @@ kotlin {
 
     // Android target
     androidTarget {
-        // Android target configuration
+        // Use Java 8 default interface methods instead of $DefaultImpls
+        // Prevents duplicate class errors when the app module also compiles shared interfaces
+        compilations.all {
+            compileTaskProvider.configure {
+                compilerOptions {
+                    freeCompilerArgs.add("-Xjvm-default=all")
+                }
+            }
+        }
     }
 
     // iOS targets
