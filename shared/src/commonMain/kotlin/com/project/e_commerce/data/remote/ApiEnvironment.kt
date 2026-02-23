@@ -37,7 +37,7 @@ object ApiEnvironment {
     // ══════════════════════════════════════════════
 
     /** Production API URL (HTTPS required) */
-    private const val PRODUCTION_URL = "https://buyv-api.up.railway.app"
+    private const val PRODUCTION_URL = "https://buyvkotlin-production.up.railway.app"
 
     /** Staging API URL */
     private const val STAGING_URL = "https://buyv-api-staging.up.railway.app"

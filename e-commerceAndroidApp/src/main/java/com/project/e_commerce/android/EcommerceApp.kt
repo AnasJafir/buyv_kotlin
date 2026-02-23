@@ -11,6 +11,7 @@ import okio.Path.Companion.toOkioPath
 import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
 import com.project.e_commerce.android.data.remote.CloudinaryConfig
+import com.project.e_commerce.data.remote.ApiEnvironment
 import com.project.e_commerce.android.di.viewModelModule
 import com.project.e_commerce.android.di.marketplaceModule
 import com.project.e_commerce.android.domain.repository.NotificationRepository
@@ -32,6 +33,11 @@ class EcommerceApp : Application() {
 
         // Use more visible logging
         android.util.Log.e("ECOMMERCE_APP", "🚀 EcommerceApp: onCreate started")
+
+        // ── API Environment ───────────────────────────────────────────────────
+        // Always use the deployed Railway backend (for both debug tests and release)
+        ApiEnvironment.current = ApiEnvironment.Environment.PRODUCTION
+        android.util.Log.e("ECOMMERCE_APP", "🌐 API URL: ${ApiEnvironment.baseUrl}")
 
         try {
             // Initialize Firebase first
