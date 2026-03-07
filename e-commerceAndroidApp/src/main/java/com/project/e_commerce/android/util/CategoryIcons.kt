@@ -23,35 +23,35 @@ object CategoryIcons {
     // slug → drawable mapping — extend as categories grow in the backend
     private val slugToDrawable: Map<String, Int> = mapOf(
         // Fashion & Clothing
-        "fashion"           to R.drawable.buyv_logo,
-        "clothing"          to R.drawable.buyv_logo,
-        "women-fashion"     to R.drawable.buyv_logo,
-        "men-fashion"       to R.drawable.buyv_logo,
+        "fashion"           to R.drawable.ic_star,
+        "clothing"          to R.drawable.ic_star,
+        "women-fashion"     to R.drawable.ic_star,
+        "men-fashion"       to R.drawable.ic_star,
         // Electronics
-        "electronics"       to R.drawable.buyv_logo,
-        "phones"            to R.drawable.buyv_logo,
-        "computers"         to R.drawable.buyv_logo,
+        "electronics"       to R.drawable.ic_video,
+        "phones"            to R.drawable.ic_video,
+        "computers"         to R.drawable.ic_video,
         // Beauty
-        "beauty"            to R.drawable.buyv_logo,
-        "skincare"          to R.drawable.buyv_logo,
-        "makeup"            to R.drawable.buyv_logo,
+        "beauty"            to R.drawable.ic_smiley,
+        "skincare"          to R.drawable.ic_smiley,
+        "makeup"            to R.drawable.ic_smiley,
         // Home
-        "home"              to R.drawable.buyv_logo,
-        "furniture"         to R.drawable.buyv_logo,
-        "kitchen"           to R.drawable.buyv_logo,
+        "home"              to R.drawable.ic_setting,
+        "furniture"         to R.drawable.ic_setting,
+        "kitchen"           to R.drawable.ic_setting,
         // Sports
-        "sports"            to R.drawable.buyv_logo,
-        "fitness"           to R.drawable.buyv_logo,
+        "sports"            to R.drawable.ic_heart_checked,
+        "fitness"           to R.drawable.ic_heart_checked,
         // Accessories
-        "accessories"       to R.drawable.buyv_logo,
-        "jewelry"           to R.drawable.buyv_logo,
-        "watches"           to R.drawable.buyv_logo,
+        "accessories"       to R.drawable.ic_star,
+        "jewelry"           to R.drawable.ic_star,
+        "watches"           to R.drawable.ic_star,
         // Food & Grocery
-        "food"              to R.drawable.buyv_logo,
-        "grocery"           to R.drawable.buyv_logo,
+        "food"              to R.drawable.ic_smiley,
+        "grocery"           to R.drawable.ic_smiley,
         // Toys & Kids
-        "toys"              to R.drawable.buyv_logo,
-        "kids"              to R.drawable.buyv_logo,
-        "baby"              to R.drawable.buyv_logo
+        "toys"              to R.drawable.ic_smiley,
+        "kids"              to R.drawable.ic_smiley,
+        "baby"              to R.drawable.ic_smiley
     )
 }

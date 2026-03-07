@@ -15,7 +15,7 @@ interface PostRepository {
      * @param caption Optional caption/description
      * @return Created post
      */
-    suspend fun createPost(type: String, mediaUrl: String, caption: String?): Post
+    suspend fun createPost(type: String, mediaUrl: String, caption: String?, additionalData: Map<String, String>? = null): Post
     
     /**
      * Like a post

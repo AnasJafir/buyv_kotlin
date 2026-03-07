@@ -16,11 +16,12 @@ class PostNetworkRepository(
     private val postApiService: PostApiService
 ) : PostRepository {
     
-    override suspend fun createPost(type: String, mediaUrl: String, caption: String?): Post {
+    override suspend fun createPost(type: String, mediaUrl: String, caption: String?, additionalData: Map<String, String>?): Post {
         val request = PostCreateRequest(
             type = type,
             mediaUrl = mediaUrl,
-            caption = caption
+            caption = caption,
+            additionalData = additionalData
         )
         val postDto = postApiService.createPost(request)
         return postDto.toDomain()
@@ -87,7 +88,7 @@ class PostNetworkRepository(
             username = username,
             userProfileImage = userProfileImage,
             caption = caption ?: "",
-            mediaUrl = videoUrl,
+            mediaUrl = videoUrl.orEmpty(),
             mediaType = if (type == "reel") MediaType.VIDEO else MediaType.IMAGE,
             thumbnailUrl = thumbnailUrl,
             likesCount = likesCount,

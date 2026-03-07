@@ -114,7 +114,7 @@ data class PostDto(
     @SerialName("isUserVerified") val isUserVerified: Boolean = false,
     
     @SerialName("type") val type: String,
-    @SerialName("videoUrl") val videoUrl: String,
+    @SerialName("videoUrl") val videoUrl: String? = null,
     @SerialName("thumbnailUrl") val thumbnailUrl: String? = null,
     @SerialName("caption") val caption: String? = null,
     @SerialName("likesCount") val likesCount: Int = 0,
@@ -270,7 +270,8 @@ data class UserPostDto(
     @SerialName("id") val id: String, // post uid
     @SerialName("userId") val userId: String,
     @SerialName("type") val type: String, // 'reel' | 'product' | 'photo'
-    @SerialName("videoUrl") val videoUrl: String, // media_url
+    @SerialName("videoUrl") val videoUrl: String? = null, // media_url
+    @SerialName("thumbnailUrl") val thumbnailUrl: String? = null, // extra images (comma-separated)
     @SerialName("caption") val caption: String? = null,
     @SerialName("likesCount") val likesCount: Int = 0,
     @SerialName("commentsCount") val commentsCount: Int = 0,

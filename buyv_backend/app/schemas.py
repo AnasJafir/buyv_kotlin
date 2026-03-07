@@ -237,7 +237,7 @@ class PostOut(CamelModel):
     type: str  # 'reel' | 'product' | 'photo'
     
     # Aly to videoUrl for Reels
-    video_url: str = Field(..., alias="videoUrl", validation_alias="media_url")
+    video_url: Optional[str] = Field(None, alias="videoUrl", validation_alias="media_url")
     thumbnail_url: Optional[str] = None
     
     caption: Optional[str] = None

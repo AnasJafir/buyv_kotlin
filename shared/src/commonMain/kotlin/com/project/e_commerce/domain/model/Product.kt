@@ -41,5 +41,6 @@ data class Product(
     val isBookmarked: Boolean = false,
     val likesCount: Int = 0,
     val commentsCount: Int = 0,
-    val postUid: String = ""  // UID du post lié (pour les commentaires via API)
+    val postUid: String = "",  // UID du post lié (pour les commentaires via API)
+    val soundUid: String = ""  // UID du son attaché (pour lire l'audio sur les posts image)
 )

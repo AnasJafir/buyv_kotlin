@@ -1,0 +1,259 @@
+{
+  "version": "0.4",
+  "exported_at": "2026-03-06T23:09:23.651Z",
+  "summary": {
+    "total": 31,
+    "checked": 0,
+    "pct": 0
+  },
+  "tickets": {
+    "AUTH-001": {
+      "title": "Google Sign-In — Erreur SHA-1 Firebase",
+      "priority": "critical",
+      "implementation_status": "pending",
+      "tested": false,
+      "obs_testeur": "Encore en pending status",
+      "obs_client": ""
+    },
+    "AUTH-002": {
+      "title": "Apple Sign-In + Facebook Sign-In",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "No encore testé mais ce n'est pas prioritaire",
+      "obs_client": ""
+    },
+    "AUTH-003": {
+      "title": "Skip Onboarding — Accès direct au contenu",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Fait !",
+      "obs_client": ""
+    },
+    "AUTH-004": {
+      "title": "Lazy Auth — Login demandé seulement lors d'une interaction",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Fait !",
+      "obs_client": ""
+    },
+    "VIDEO-001": {
+      "title": "Icône Pause persistante — disparaît après 1.5s",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Fait ! Très bien!",
+      "obs_client": ""
+    },
+    "VIDEO-002": {
+      "title": "Icône Play visible pendant la lecture",
+      "priority": "medium",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Fait ! Très bien !",
+      "obs_client": ""
+    },
+    "VIDEO-003": {
+      "title": "Owner Mode — Boutons interaction remplacés par Edit/Delete",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Fait !",
+      "obs_client": ""
+    },
+    "VIDEO-004": {
+      "title": "Back Press sur BottomSheet Buy — quittait l'app",
+      "priority": "critical",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Fait !",
+      "obs_client": ""
+    },
+    "VIDEO-005": {
+      "title": "Icônes sociales — Contours creux (Outlined)",
+      "priority": "medium",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Fait !",
+      "obs_client": ""
+    },
+    "VIDEO-006": {
+      "title": "Animation cœur — Lottie 60fps",
+      "priority": "medium",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Fait !",
+      "obs_client": ""
+    },
+    "UPLOAD-001": {
+      "title": "CTA Upload non intuitif",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Ajouteur un post depuis le feed est toujours non possible ! laissons ça à part pour l'instant",
+      "obs_client": ""
+    },
+    "UPLOAD-002": {
+      "title": "HTML brut visible dans Caption / Description produit",
+      "priority": "critical",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Fait ! mais toujours ce [OBJ] pour product Image et ça gêne !",
+      "obs_client": ""
+    },
+    "UPLOAD-003": {
+      "title": "Séparation zones Upload vidéo + photos",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "j'upload une video et image dans le même post mais je ne vous que la video dans le post, je veux adopter le style Instagram/tiktok => avoir la possibilité de scroller horizontalement sur le même post pour voir les medias importés sur le même post avec ces point blanc en bas du post (nombre de médias ...)",
+      "obs_client": ""
+    },
+    "UPLOAD-004": {
+      "title": "Auth Guard avant Upload — Message \"Not authenticated\"",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "quand je veux importer un media via 'Add New Post' et l'associer à un produit existant dans la page Products, ce n'est pas possible ! je vois qu'il y a un problème de fetching des produits depuis la page en question",
+      "obs_client": ""
+    },
+    "SOUND-001": {
+      "title": "Crash — Erreur désérialisation SoundDto",
+      "priority": "critical",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Fait ! mais quand j'appuie l'icone play en premier lieu ça prend du temps sans rien écouter, mais quand j'appuie par la suite sur pause la music se lance, donc l'extraction de la musique marche et apparemment elle fait du temps en premier pour se lancer mais ça altère l'experience utilisateur qui ecoute la musique lancée même si il a tapé sur pause avant que ça interagit normal par la suite avec l'utilisateur, il semble que c'est un lag de fetching de l'audio non ?",
+      "obs_client": ""
+    },
+    "SOUND-002": {
+      "title": "Bouton \"Use Sound\" — Navigation vers création de post",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "C'est FAIT ! sauf qu'il y a un problème avec Select a Marketplace Product a réctifié, ça ne retourne rien sauf une erreur",
+      "obs_client": ""
+    },
+    "SOUND-003": {
+      "title": "Extraction audio depuis vidéo — POST /api/sounds/extract",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "le fichier audio n'est pas enregistrable via la fonction add to Favorites",
+      "obs_client": ""
+    },
+    "SET-001": {
+      "title": "Sélecteur de langue non fonctionnel",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Non ça marche pas !",
+      "obs_client": ""
+    },
+    "SET-002": {
+      "title": "Crash navigation vers profil d'un créateur",
+      "priority": "critical",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "ça crache encore !",
+      "obs_client": ""
+    },
+    "SET-003": {
+      "title": "Follow button — Disparaît après suivi (GONE)",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Non testé car l'accès a un proful non suivi fait cracher l'app",
+      "obs_client": ""
+    },
+    "SET-004": {
+      "title": "Save = Cart — Un seul bouton",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "le bouton existe mais non clickable !",
+      "obs_client": ""
+    },
+    "PROD-001": {
+      "title": "Carte produit overlay — Taille réduite",
+      "priority": "medium",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Fait !",
+      "obs_client": ""
+    },
+    "PROD-003": {
+      "title": "Image produit non chargée — Placeholder incorrect",
+      "priority": "medium",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Image se charge pas !",
+      "obs_client": ""
+    },
+    "PROD-005": {
+      "title": "Bannière promotionnelle dynamique (Admin)",
+      "priority": "medium",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "J'ai pas pu accéder à l'admin Panel je reçois : Serializer for class 'AdminLoginRequest' is not found. Please ensure that class is marked as '@Serializable' and that the serialization compiler plugin is applied.",
+      "obs_client": ""
+    },
+    "CAT-001": {
+      "title": "Catégories actives sur la page Products",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Accès à l'admin panel non-granted",
+      "obs_client": ""
+    },
+    "CAT-005": {
+      "title": "Icônes catégories — Placeholder panier incorrect",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Il n'y a que l'icône de panier sur les catégories !",
+      "obs_client": ""
+    },
+    "CAT-002": {
+      "title": "Auto-catégorisation des produits CJ à l'import",
+      "priority": "high",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Accès à l'admin panel non-granted !",
+      "obs_client": ""
+    },
+    "UI-001": {
+      "title": "Bouton Buy — Bordures inconfortables",
+      "priority": "medium",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "les contours persistent ! et la navigation entre pages connait un lag ! c'est pa fluide",
+      "obs_client": ""
+    },
+    "UI-003": {
+      "title": "Caractères [OBJ] — Emojis corrompus",
+      "priority": "medium",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Non testé car je ne peux pas acceder au profils",
+      "obs_client": ""
+    },
+    "UI-004": {
+      "title": "Vignettes profil rectangulaires (9:16)",
+      "priority": "medium",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "Faits !",
+      "obs_client": ""
+    },
+    "UI-002": {
+      "title": "Spinner de chargement — Un seul, couleur unifiée",
+      "priority": "low",
+      "implementation_status": "done",
+      "tested": false,
+      "obs_testeur": "encore deux spinners, un bleu superposé à un en avant plan blanc",
+      "obs_client": ""
+    }
+  }
+}

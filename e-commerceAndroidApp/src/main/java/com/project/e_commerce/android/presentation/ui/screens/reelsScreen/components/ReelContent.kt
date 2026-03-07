@@ -124,7 +124,8 @@ fun ReelContent(
                 }
             },
             cartViewModel = cartViewModel,
-            reelsViewModel = viewModel
+            reelsViewModel = viewModel,
+            onRequireLogin = { showLoginPrompt.value = true }   // SET-004
         )
     }
 }

@@ -314,39 +314,15 @@ fun ReelsView(
         }
     }
 
-    // Initialize pager state with safety bounds - only when reels are available
-    // If a targetReelId is provided, find its index in the list
+    // Compute initial page for target reel navigation
     val initialPage = if (!targetReelId.isNullOrBlank() && reelsList.isNotEmpty()) {
         reelsList.indexOfFirst { it.id == targetReelId }.takeIf { it >= 0 } ?: 0
-    } else if (reelsList.isNotEmpty()) {
-        minOf(0, maxOf(0, reelsList.size - 1))
     } else {
         0
     }
-    Log.d("ReelsView", "🎬 Initializing pager state with initialPage: $initialPage, total pages: ${reelsList.size}")
-
-    val pagerState = rememberPagerState(
-        initialPage = initialPage
-    )
-
-    // If a targetReelId is provided, reset the pager to show that reel
-    LaunchedEffect(targetReelId, reelsList) {
-        if (!targetReelId.isNullOrBlank() && reelsList.isNotEmpty()) {
-            val idx = reelsList.indexOfFirst { it.id == targetReelId }
-            if (idx >= 0) {
-                Log.d(
-                    "ReelsView",
-                    "Navigating to target reel index: $idx for reelId: $targetReelId"
-                )
-                pagerState.scrollToPage(idx)
-            }
-        }
-    }
-
-    Log.d("ReelsView", "🎬 Pager state initialized successfully")
+    Log.d("ReelsView", "🎬 Initial page: $initialPage, total reels: ${reelsList.size}")
 
     var currentPage by remember { mutableStateOf(initialPage) }
-    Log.d("ReelsView", "🎬 Current page state initialized: $currentPage")
 
     var isSelectedComments by remember { mutableStateOf(true) }
     
@@ -362,9 +338,15 @@ fun ReelsView(
     val tabList = listOf("For you", "Following", "Explore")
     var selectedTab by remember { mutableStateOf("For you") }
 
-    // Force refresh from ProductViewModel when needed
+    // Force refresh from ProductViewModel when entering the reels screen.
+    // Always force a full refresh to ensure newly created posts are visible.
     LaunchedEffect(Unit) {
-        viewModel.forceRefreshFromProductViewModel()
+        if (targetReelId == null) {
+            viewModel.forceRefreshFromProductViewModel()
+        } else {
+            // When targeting a specific reel, force a fresh load so the target is included
+            viewModel.refreshDataOnly()
+        }
     }
 
     var isVisible by remember { mutableStateOf(false) }
@@ -381,9 +363,8 @@ fun ReelsView(
         // Load current user ID from backend
         currentUserId = currentUserProvider.getCurrentUserId() ?: ""
 
-        // Force refresh reels when screen becomes active
-        Log.d("ReelsView", "🔄 ReelsView became active, forcing reels refresh")
-        viewModel.forceRefreshFromProductViewModel()
+        // Refresh reels data is handled by the first LaunchedEffect above — no duplicate call
+        // (When targetReelId != null, data is ensured loaded by the earlier LaunchedEffect)
 
         // ✅ REACTIVATED: Following data loading now uses CurrentUserProvider (backend auth)
         try {
@@ -532,8 +513,9 @@ fun ReelsView(
                     initialPage = initialPage,
                     onShareReel = ::shareReel,
                     recentlyViewedViewModel = recentlyViewedViewModel,
-                    globalVideoPlayStates = globalVideoPlayStates, // NEW: Pass global state
-                    mainUiStateViewModel = mainUiStateViewModel // NEW: Pass mainUiStateViewModel
+                    globalVideoPlayStates = globalVideoPlayStates,
+                    mainUiStateViewModel = mainUiStateViewModel,
+                    targetReelId = targetReelId
                 )
             }
             else -> {
@@ -593,8 +575,14 @@ fun ReelsView(
 
         if (showLoginPrompt.value) {
             RequireLoginPrompt(
-                onLogin = { showLoginPrompt.value = false },
-                onSignUp = { showLoginPrompt.value = false },
+                onLogin = {
+                    showLoginPrompt.value = false
+                    navController.navigate(Screens.LoginScreen.route)
+                },
+                onSignUp = {
+                    showLoginPrompt.value = false
+                    navController.navigate(Screens.LoginScreen.CreateAccountScreen.route)
+                },
                 onDismiss = { showLoginPrompt.value = false }
             )
         }
@@ -612,8 +600,14 @@ fun ReelsView(
 
     if (showLoginPrompt.value) {
         RequireLoginPrompt(
-            onLogin = { showLoginPrompt.value = false },
-            onSignUp = { showLoginPrompt.value = false },
+            onLogin = {
+                showLoginPrompt.value = false
+                navController.navigate(Screens.LoginScreen.route)
+            },
+            onSignUp = {
+                showLoginPrompt.value = false
+                navController.navigate(Screens.LoginScreen.CreateAccountScreen.route)
+            },
             onDismiss = { showLoginPrompt.value = false }
         )
     }
@@ -639,49 +633,6 @@ fun ReelsView(
                 mainUiStateViewModel?.showBottomBar()
             }
         )
-    }
-
-    // Monitor page changes with safety bounds checking
-    LaunchedEffect(pagerState.currentPage) {
-        Log.d("ReelsView", "🎬 Page changed to: ${pagerState.currentPage}")
-
-        // Safety check: ensure reelsList is not empty and page index is valid
-        if (reelsList.isEmpty()) {
-            Log.w("ReelsView", "🎬 Reels list is empty, skipping page update")
-            mainUiStateViewModel?.setCurrentReel(null)
-            return@LaunchedEffect
-        }
-
-        val pageIndex = pagerState.currentPage
-        if (pageIndex < 0 || pageIndex >= reelsList.size) {
-            Log.w("ReelsView", "🎬 Invalid page index: $pageIndex, reelsList size: ${reelsList.size}")
-            mainUiStateViewModel?.setCurrentReel(null)
-            return@LaunchedEffect
-        }
-
-        currentPage = pageIndex
-
-        // Update current reel for cart status with safety check
-        val currentReel = reelsList[pageIndex]
-        if (currentReel != null && currentReel.id.isNotBlank()) {
-            Log.d("ReelsView", "🎬 Current reel updated: ${currentReel.id}")
-            viewModel.checkCartStatus(currentReel.id)
-            
-            // Set current reel in MainUiStateViewModel for Buy FAB
-            mainUiStateViewModel?.setCurrentReel(currentReel)
-            
-            // Wait a bit to make sure user is actually viewing this reel, then track it
-            kotlinx.coroutines.delay(1000) // Wait 1 second before tracking as viewed
-            
-            // Double check the page hasn't changed during the delay
-            if (pagerState.currentPage == pageIndex) {
-                Log.d("ReelsView", "🎬 Tracking reel as viewed: ${currentReel.id}")
-                recentlyViewedViewModel.addReelToRecentlyViewed(currentReel)
-            }
-        } else {
-            Log.w("ReelsView", "🎬 No valid current reel available")
-            mainUiStateViewModel?.setCurrentReel(null)
-        }
     }
 }
 
@@ -814,7 +765,8 @@ fun ReelsList(
     onShareReel: (Reels) -> Unit = {},
     recentlyViewedViewModel: com.project.e_commerce.android.presentation.viewModel.RecentlyViewedViewModel,
     globalVideoPlayStates: SnapshotStateMap<String, Boolean> = mutableStateMapOf(), // NEW: Accept global state
-    mainUiStateViewModel: com.project.e_commerce.android.presentation.viewModel.MainUiStateViewModel? = null // NEW: Add mainUiStateViewModel parameter
+    mainUiStateViewModel: com.project.e_commerce.android.presentation.viewModel.MainUiStateViewModel? = null, // NEW: Add mainUiStateViewModel parameter
+    targetReelId: String? = null
 ) {
     // Inject TrackingRepository for view tracking
     val trackingRepository: TrackingRepository = koinInject()
@@ -836,6 +788,31 @@ fun ReelsList(
             Text("No reels available")
         }
         return
+    }
+
+    // Scroll to target reel when coming from profile grid or deep link
+    // Uses reelsList.size as key so it re-fires when data loads/changes
+    LaunchedEffect(targetReelId, reelsList.size) {
+        if (!targetReelId.isNullOrBlank() && reelsList.isNotEmpty()) {
+            val idx = reelsList.indexOfFirst { it.id == targetReelId }
+            if (idx >= 0) {
+                Log.d("ReelsList", "🎯 Scrolling to target reel $targetReelId at index $idx (currentPage=${pagerState.currentPage})")
+                pagerState.scrollToPage(idx)
+            } else {
+                Log.w("ReelsList", "⚠️ Target reel $targetReelId NOT found in ${reelsList.size} reels — refreshing data")
+                viewModel.refreshDataOnly()
+            }
+        }
+    }
+
+    // Scroll to top when a new post is created (newest first)
+    LaunchedEffect(Unit) {
+        viewModel.scrollToTop.collect {
+            if (targetReelId == null && reelsList.isNotEmpty()) {
+                Log.d("ReelsList", "🔝 Scrolling to top (new post created)")
+                pagerState.scrollToPage(0)
+            }
+        }
     }
 
     // NEW: Track current reel changes and update MainUiStateViewModel
@@ -990,112 +967,196 @@ fun ReelsList(
         ) {
 
             val videoUriToUse = reel.video
-            Log.d("ReelsCrash", "[DEBUG] Using videoUri: $videoUriToUse for reel.id=${reel.id}")
-            if (videoUriToUse != null && !reel.isError && videoUriToUse.toString().isNotEmpty() && videoUriToUse.toString().startsWith("http")) {
+            val hasValidVideo = videoUriToUse != null && !reel.isError && videoUriToUse.toString().isNotEmpty() && videoUriToUse.toString().startsWith("http")
+            val validImages = reel.images?.filter { it != null && it.toString().startsWith("http") } ?: emptyList()
+            val hasImages = validImages.isNotEmpty()
+
+            if (hasValidVideo && hasImages) {
+                // BOTH video + images: show in HorizontalPager (video first, then images)
+                val totalPages = 1 + validImages.size
+                val mediaPagerState = rememberPagerState(initialPage = 0)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black)
+                ) {
+                    HorizontalPager(
+                        state = mediaPagerState,
+                        modifier = Modifier.fillMaxSize(),
+                        count = totalPages
+                    ) { mediaIndex ->
+                        if (mediaIndex == 0) {
+                            // First page: Video
+                            val isVideoPageActive = mediaPagerState.currentPage == 0
+                            VideoPlayer(
+                                uri = videoUriToUse!!,
+                                isPlaying = isCurrentlyPlaying && isVideoPageActive,
+                                onPlaybackStarted = {
+                                    Log.d("ReelsView", "🎬 Video playback started for reel ${reel.id}")
+                                },
+                                onPlaybackToggle = { isPlaying ->
+                                    videoPlayStates[reel.id] = isPlaying
+                                    overlayShowsPlay = isPlaying
+                                    playOverlayTrigger++
+                                    if (isPlaying) {
+                                        videoPlayStates.keys.forEach { reelId ->
+                                            if (reelId != reel.id) videoPlayStates[reelId] = false
+                                        }
+                                    }
+                                },
+                                onDoubleTap = { tapOffset ->
+                                    if (isLoggedIn) {
+                                        heartPositionForThisReel = tapOffset
+                                        showHeartForThisReel = true
+                                        if (!reel.love.isLoved) viewModel.onClackLoveReelsButton(reel.id)
+                                    } else {
+                                        showLoginPrompt.value = true
+                                    }
+                                },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            // Image pages
+                            val imageUri = validImages[mediaIndex - 1]
+                            Image(
+                                painter = rememberAsyncImagePainter(imageUri),
+                                contentDescription = "Reel Image ${mediaIndex - 1}",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.Black)
+                            )
+                        }
+                    }
+                    // Page indicator dots
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 120.dp)
+                    ) {
+                        repeat(totalPages) { idx ->
+                            Box(
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .size(if (mediaPagerState.currentPage == idx) 10.dp else 7.dp)
+                                    .background(
+                                        if (mediaPagerState.currentPage == idx) Color.White else Color.White.copy(alpha = 0.5f),
+                                        shape = CircleShape
+                                    )
+                            )
+                        }
+                    }
+                }
+            } else if (hasValidVideo) {
+                // Video only
                 VideoPlayer(
-                    uri = videoUriToUse,
-                    isPlaying = isCurrentlyPlaying, // Use the state-managed play status
+                    uri = videoUriToUse!!,
+                    isPlaying = isCurrentlyPlaying,
                     onPlaybackStarted = {
                         Log.d("ReelsView", "🎬 Video playback started for reel ${reel.id}")
                     },
-                    // NEW: Handle play/pause toggle
                     onPlaybackToggle = { isPlaying ->
-                        Log.d(
-                            "ReelsView",
-                            "🎥 Video playback toggled for reel ${reel.id}: $isPlaying"
-                        )
+                        Log.d("ReelsView", "🎥 Video playback toggled for reel ${reel.id}: $isPlaying")
                         videoPlayStates[reel.id] = isPlaying
-                        // VIDEO-001: Show play/pause icon briefly on tap
                         overlayShowsPlay = isPlaying
                         playOverlayTrigger++
-
-                        // If this video starts playing, pause all others
                         if (isPlaying) {
                             videoPlayStates.keys.forEach { reelId ->
-                                if (reelId != reel.id) {
-                                    videoPlayStates[reelId] = false
-                                }
+                                if (reelId != reel.id) videoPlayStates[reelId] = false
                             }
                         }
                     },
-                    // NEW: Handle double tap to like with exact position
                     onDoubleTap = { tapOffset ->
                         if (isLoggedIn) {
-                            // Heart animation fix: Record position & show trigger for this reel only!
                             heartPositionForThisReel = tapOffset
                             showHeartForThisReel = true
-
-                            // Only like if not already liked, but always animate
-                            if (!reel.love.isLoved) {
-                                viewModel.onClackLoveReelsButton(reel.id)
-                            }
+                            if (!reel.love.isLoved) viewModel.onClackLoveReelsButton(reel.id)
                         } else {
                             showLoginPrompt.value = true
                         }
                     },
                     modifier = Modifier.fillMaxSize()
                 )
-            } else if (reel.images != null && reel.images.isNotEmpty() && reel.images.all {
-                    it != null && it.toString().isNotBlank()
-                }) {
-                Log.d("ReelsView", "🎬 Showing images for reel ${reel.id}, count: ${reel.images.size}")
+            } else if (hasImages) {
+                // Images only (may have sound attached for audio reel)
+                Log.d("ReelsView", "🎬 Showing images for reel ${reel.id}, count: ${validImages.size}, soundUid: ${reel.soundUid}")
                 val imagesPagerState = rememberPagerState(initialPage = 0)
-                val aspect = 1f
+
+                // Audio playback for image posts with a sound attached
+                if (!reel.soundUid.isNullOrBlank() && page == currentPage) {
+                    val soundApi: com.project.e_commerce.data.remote.api.SoundApiService = koinInject()
+                    var audioUrl by remember(reel.soundUid) { mutableStateOf<String?>(null) }
+
+                    // Fetch sound URL
+                    LaunchedEffect(reel.soundUid) {
+                        try {
+                            val sound = soundApi.getSound(reel.soundUid!!)
+                            audioUrl = sound.audioUrl
+                        } catch (e: Exception) {
+                            Log.e("ReelsView", "Failed to fetch sound ${reel.soundUid}: ${e.message}")
+                        }
+                    }
+
+                    // Play audio when URL is available and reel is active
+                    if (audioUrl != null) {
+                        DisposableEffect(audioUrl, isCurrentlyPlaying) {
+                            val mediaPlayer = android.media.MediaPlayer().apply {
+                                try {
+                                    setDataSource(audioUrl)
+                                    isLooping = true
+                                    prepareAsync()
+                                    setOnPreparedListener {
+                                        if (isCurrentlyPlaying) start()
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e("ReelsView", "Audio player error: ${e.message}")
+                                }
+                            }
+                            onDispose {
+                                try {
+                                    if (mediaPlayer.isPlaying) mediaPlayer.stop()
+                                    mediaPlayer.release()
+                                } catch (_: Exception) {}
+                            }
+                        }
+                    }
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.Black)
-                        .offset(y = (-16f).dp)
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                    ) {
-                        HorizontalPager(
-                            state = imagesPagerState,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(aspect),
-                            count = reel.images.size
-                        ) { imgIndex ->
-                            val imageUri = reel.images[imgIndex]
-                            if (imageUri != null && imageUri.toString().startsWith("http")) {
-                                Image(
-                                    painter = rememberAsyncImagePainter(imageUri),
-                                    contentDescription = "Reel Image $imgIndex",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            } else {
-                                Log.e(
-                                    "ReelsCrash",
-                                    "Missing or invalid image for reel ${reel.id} at imgIndex=$imgIndex. Using placeholder."
-                                )
-                                Image(
-                                    painter = painterResource(id = R.drawable.profile),
-                                    contentDescription = "Fallback Image (Invalid URI)",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                        }
-
+                    HorizontalPager(
+                        state = imagesPagerState,
+                        modifier = Modifier.fillMaxSize(),
+                        count = validImages.size
+                    ) { imgIndex ->
+                        Image(
+                            painter = rememberAsyncImagePainter(validImages[imgIndex]),
+                            contentDescription = "Reel Image $imgIndex",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    if (validImages.size > 1) {
                         Row(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 14.dp)
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 120.dp)
                         ) {
-                            repeat(reel.images.size) { idx ->
+                            repeat(validImages.size) { idx ->
                                 Box(
                                     modifier = Modifier
                                         .padding(horizontal = 4.dp)
                                         .size(if (imagesPagerState.currentPage == idx) 10.dp else 7.dp)
                                         .background(
-                                            if (imagesPagerState.currentPage == idx) Color.White else Color.White.copy(
-                                                alpha = 0.5f
-                                            ),
+                                            if (imagesPagerState.currentPage == idx) Color.White else Color.White.copy(alpha = 0.5f),
                                             shape = CircleShape
                                         )
                                 )
@@ -1104,10 +1165,7 @@ fun ReelsList(
                     }
                 }
             } else {
-                Log.e(
-                    "ReelsCrash",
-                    "Neither video nor images are valid for reel ${reel.id}. Using fallback image."
-                )
+                Log.e("ReelsCrash", "Neither video nor images are valid for reel ${reel.id}. Using fallback image.")
                 Image(
                     painter = painterResource(id = R.drawable.profile),
                     contentDescription = "Fallback Image",
@@ -1164,8 +1222,14 @@ fun ReelsList(
             // RequireLoginPrompt overlay
             if (showLoginPrompt.value) {
                 RequireLoginPrompt(
-                    onLogin = { showLoginPrompt.value = false },
-                    onSignUp = { showLoginPrompt.value = false },
+                    onLogin = {
+                        showLoginPrompt.value = false
+                        navController.navigate(Screens.LoginScreen.route)
+                    },
+                    onSignUp = {
+                        showLoginPrompt.value = false
+                        navController.navigate(Screens.LoginScreen.CreateAccountScreen.route)
+                    },
                     onDismiss = { showLoginPrompt.value = false }
                 )
             }

@@ -87,6 +87,7 @@ import com.project.e_commerce.android.presentation.ui.screens.admin.AdminAffilia
 import com.project.e_commerce.android.presentation.ui.screens.admin.AdminPromoterWalletsScreen
 import com.project.e_commerce.android.presentation.ui.screens.admin.AdminNotificationsScreen
 import com.project.e_commerce.android.presentation.ui.screens.camera.CameraScreen
+import com.project.e_commerce.android.presentation.ui.screens.otherUserProfile.OtherUserProfileScreen
 
 import android.util.Log
 import androidx.compose.ui.Alignment
@@ -313,9 +314,12 @@ fun MyNavHost(
                 preSelectedProductId = preSelectedProductId,
                 preSelectedSoundUid = preSelectedSoundUid,
                 onPostCreated = {
-                    // Refresh product feed and reels after creating a new post
-                    productViewModel.refreshProducts()
-                    reelsScreenViewModel.refreshReels()
+                    // Signal that reels need refresh (the ReelsView LaunchedEffect will handle it)
+                    reelsScreenViewModel.markNeedsRefresh()
+                    // UPLOAD-003: Navigate to ReelsScreen (feed) after post is created
+                    navController.navigate(Screens.ReelsScreen.route) {
+                        popUpTo(Screens.ProfileScreen.AddNewContentScreen.route) { inclusive = true }
+                    }
                 }
             )
         }
@@ -498,6 +502,15 @@ fun MyNavHost(
         composable(Screens.AdminAffiliateSales.route) { AdminAffiliateSalesScreen(navController) }
         composable(Screens.AdminPromoterWallets.route) { AdminPromoterWalletsScreen(navController) }
         composable(Screens.AdminNotifications.route) { AdminNotificationsScreen(navController) }
+
+        // SET-002: Other user profile (accessed from reel avatar tap)
+        composable(
+            route = Screens.OtherUserProfileScreen.route,
+            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            OtherUserProfileScreen(navController = navController, userId = userId)
+        }
 
         // 2.18 — In-App Camera
         composable(Screens.CameraScreen.route) {

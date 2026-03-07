@@ -30,9 +30,9 @@ class PostApiService(private val httpClient: HttpClient) {
      * Get user feed (all posts)
      * GET /posts/feed?skip={skip}&limit={limit}
      */
-    suspend fun getFeed(skip: Int = 0, limit: Int = 20): List<PostDto> {
+    suspend fun getFeed(offset: Int = 0, limit: Int = 20): List<PostDto> {
         return httpClient.get("posts/feed") {
-            parameter("skip", skip)
+            parameter("offset", offset)
             parameter("limit", limit)
         }.body()
     }

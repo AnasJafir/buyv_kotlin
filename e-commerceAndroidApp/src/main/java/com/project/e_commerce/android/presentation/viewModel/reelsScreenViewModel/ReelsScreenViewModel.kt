@@ -21,6 +21,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import com.project.e_commerce.android.presentation.viewModel.ProductViewModel
 import kotlinx.coroutines.delay
@@ -63,6 +65,18 @@ class ReelsScreenViewModel(
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> get() = _errorMessage.asStateFlow()
+
+    private val _scrollToTop = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val scrollToTop = _scrollToTop.asSharedFlow()
+
+    /** Set to true after a post is created, cleared after the next refresh */
+    @Volatile
+    private var needsRefresh = false
+
+    /** Called from onPostCreated to signal that data is stale */
+    fun markNeedsRefresh() {
+        needsRefresh = true
+    }
 
     init {
         try {
@@ -159,8 +173,6 @@ class ReelsScreenViewModel(
     private suspend fun loadReelsFromDatabase(): List<Reels> {
         Log.d("ReelsScreenViewModel", "🚀 Loading reels from database")
         return try {
-            delay(1000)
-
             val reels = productViewModel.productReels
             Log.d("ReelsScreenViewModel", "🚀 Received ${reels.size} reels from ProductViewModel")
 
@@ -171,10 +183,14 @@ class ReelsScreenViewModel(
                         "ReelsScreenViewModel",
                         "🔄 Generating reels from ${products.size} products"
                     )
-                    productViewModel.refreshReels()
-                    delay(500)
+                    // Use sync refresh to AWAIT reel generation (no fire-and-forget race)
+                    productViewModel.refreshProductsSync()
                     val freshReels = productViewModel.productReels
-                    loadLikeStatesForReels(freshReels)
+                    if (freshReels.isNotEmpty()) {
+                        loadLikeStatesForReels(freshReels)
+                    } else {
+                        emptyList()
+                    }
                 } else {
                     Log.w("ReelsScreenViewModel", "⚠️ No products available either")
                     emptyList()
@@ -258,11 +274,24 @@ class ReelsScreenViewModel(
     
     fun forceRefreshFromProductViewModel() {
         viewModelScope.launch {
-            Log.d("ReelsScreenViewModel", "🔄 forceRefreshFromProductViewModel called")
-            productViewModel.refreshProducts()
-            productViewModel.refreshReels()
-            delay(1000)
+            Log.d("ReelsScreenViewModel", "🔄 forceRefreshFromProductViewModel called (needsRefresh=$needsRefresh)")
+            needsRefresh = false
+            productViewModel.refreshProductsSync()  // AWAIT completion (no race condition)
             loadReelsWithRetry()
+            _scrollToTop.tryEmit(Unit)
+        }
+    }
+
+    /**
+     * Refresh feed data WITHOUT scrolling to top.
+     * Used when navigating to a specific reel (profile grid tap).
+     */
+    fun refreshDataOnly() {
+        viewModelScope.launch {
+            Log.d("ReelsScreenViewModel", "🔄 refreshDataOnly called (no scrollToTop)")
+            productViewModel.refreshProductsSync()  // AWAIT completion (no race condition)
+            loadReelsWithRetry()
+            // NO _scrollToTop emission — caller will handle scrolling to the target
         }
     }
 

@@ -156,7 +156,7 @@ class BackendUserProfileRepository(
         Log.d(TAG, "🔍 Getting user reels for: $uid")
         return when (val postsResult = getUserPosts(uid)) {
             else -> {
-                val reels = postsResult.getOrNull()?.filter { it.type.lowercase() == "reel" } ?: emptyList()
+                val reels = postsResult.getOrNull()?.filter { it.type.lowercase() in listOf("reel", "photo") } ?: emptyList()
                 if (postsResult.isSuccess) {
                     Log.d(TAG, "✅ Got ${reels.size} reels")
                     Result.success(reels)

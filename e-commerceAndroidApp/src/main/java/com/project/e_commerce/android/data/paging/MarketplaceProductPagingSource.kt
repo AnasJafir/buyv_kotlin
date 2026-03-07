@@ -6,7 +6,7 @@ import com.project.e_commerce.domain.model.Result
 import com.project.e_commerce.domain.model.marketplace.MarketplaceProduct
 import com.project.e_commerce.domain.model.marketplace.ProductSortBy
 import com.project.e_commerce.domain.usecase.marketplace.GetProductsUseCase
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.first
 
 /**
  * PagingSource pour la pagination des produits du Marketplace.
@@ -46,6 +46,7 @@ class MarketplaceProductPagingSource(
 
         return try {
             // Appel à l'API via UseCase
+            // Skip Result.Loading (always emitted first by repository) and get the actual result
             val result = getProductsUseCase(
                 categoryId = categoryId,
                 minPrice = minPrice,
@@ -55,7 +56,7 @@ class MarketplaceProductPagingSource(
                 sortBy = sortBy?.value ?: "relevance",
                 page = page,
                 limit = params.loadSize
-            ).firstOrNull()
+            ).first { it !is Result.Loading }
 
             when (result) {
                 is Result.Success -> {

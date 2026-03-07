@@ -394,47 +394,48 @@ fun SoundHeaderSection(
 
     val actualRotation = if (isPlaying) animatedRotation else 0f
 
-    // Handle MediaPlayer lifecycle
+    var isPrepared by remember { mutableStateOf(false) }
+
+    // Pre-initialize MediaPlayer as soon as the composable loads
+    // so first Play tap is instant (no buffering delay)
     DisposableEffect(audioUrl) {
-        // Cleanup when composable leaves composition
+        val player = MediaPlayer().apply {
+            try {
+                setDataSource(context, Uri.parse(audioUrl))
+                setOnPreparedListener {
+                    isPrepared = true
+                    // If user already tapped Play while buffering, start now
+                    if (isPlaying) start()
+                }
+                setOnCompletionListener {
+                    isPlaying = false
+                }
+                prepareAsync()
+            } catch (e: Exception) {
+                Log.e("SoundHeaderSection", "Error preparing media player: $e")
+            }
+        }
+        mediaPlayer = player
+
         onDispose {
-            mediaPlayer?.release()
+            player.release()
             mediaPlayer = null
+            isPrepared = false
         }
     }
 
     LaunchedEffect(isPlaying) {
+        val mp = mediaPlayer ?: return@LaunchedEffect
         if (isPlaying) {
-            if (mediaPlayer == null) {
-                try {
-                    mediaPlayer = MediaPlayer().apply {
-                        setDataSource(context, Uri.parse(audioUrl))
-                        setOnPreparedListener {
-                            start()
-                        }
-                        setOnCompletionListener {
-                            isPlaying = false
-                        }
-                        prepareAsync()
-                    }
-                } catch (e: Exception) {
-                    Log.e("SoundHeaderSection", "Error preparing media player: $e")
-                    isPlaying = false
-                }
-            } else {
-                try {
-                    if (!mediaPlayer!!.isPlaying) {
-                        mediaPlayer?.start()
-                    }
-                } catch (e: Exception) {
+            if (isPrepared) {
+                try { if (!mp.isPlaying) mp.start() } catch (e: Exception) {
                     Log.e("SoundHeaderSection", "Error starting media player: $e")
                     isPlaying = false
                 }
             }
+            // else: onPreparedListener will call start() when ready
         } else {
-            try {
-                mediaPlayer?.pause()
-            } catch (e: Exception) {
+            try { mp.pause() } catch (e: Exception) {
                 Log.e("SoundHeaderSection", "Error pausing media player: $e")
             }
         }

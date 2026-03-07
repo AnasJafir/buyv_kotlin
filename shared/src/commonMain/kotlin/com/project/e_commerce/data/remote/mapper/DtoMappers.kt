@@ -60,18 +60,25 @@ fun FollowingStatusDto.toDomain(): FollowingStatus {
  * Convert UserPostDto to UserPost domain model
  */
 fun UserPostDto.toDomain(): UserPost {
+    // Parse extra images from thumbnailUrl (comma-separated URLs set during upload)
+    val extraImages = thumbnailUrl
+        ?.split(",")
+        ?.map { it.trim() }
+        ?.filter { it.startsWith("http") }
+        ?: emptyList()
+
     return UserPost(
         id = id,
         userId = userId,
         type = type.uppercase(),
         title = HtmlSanitizer.toPlainText(caption),
         description = HtmlSanitizer.toPlainText(caption),
-        mediaUrl = videoUrl,
-        thumbnailUrl = null, // Not in backend DTO
-        images = emptyList(), // Not in backend DTO
+        mediaUrl = videoUrl.orEmpty(),
+        thumbnailUrl = thumbnailUrl,
+        images = extraImages.ifEmpty { listOfNotNull(videoUrl?.takeIf { it.startsWith("http") }) },
         likesCount = likesCount,
         commentsCount = commentsCount,
-        viewsCount = 0, // Not in backend DTO
+        viewsCount = 0,
         isPublished = true,
         createdAt = parseTimestamp(createdAt),
         updatedAt = parseTimestamp(updatedAt)
@@ -95,22 +102,41 @@ fun UserProfile.toUpdateDto(): UserUpdateDto {
  * Convert PostDto to Product domain model (for product listings)
  */
 fun PostDto.toProduct(): Product {
+    // Determine if the media_url (mapped to videoUrl) is actually a video or an image.
+    // Cloudinary video URLs contain "/video/upload/", image URLs contain "/image/upload/".
+    val mediaUrl = videoUrl.orEmpty()
+    val isVideoContent = mediaUrl.isNotEmpty() && (
+            mediaUrl.contains("/video/upload/") ||
+            mediaUrl.endsWith(".mp4") || mediaUrl.endsWith(".mov") || mediaUrl.endsWith(".webm"))
+
+    // Parse extra image URLs from thumbnailUrl (comma-separated, saved during upload)
+    val extraImages = thumbnailUrl
+        ?.split(",")
+        ?.map { it.trim() }
+        ?.filter { it.startsWith("http") }
+        ?: emptyList()
+
+    // Extract sound UID from caption (embedded as {{sound:UID}}) and strip from display text
+    val soundTagRegex = Regex("""\n?\{\{sound:([^}]+)\}\}""")
+    val soundMatch = soundTagRegex.find(caption ?: "")
+    val extractedSoundUid = soundMatch?.groupValues?.getOrNull(1) ?: ""
+    val cleanCaption = (caption ?: "").replace(soundTagRegex, "").trim()
+
     return Product(
         id = id,
         userId = userId,
-        name = HtmlSanitizer.toPlainText(caption).ifBlank { "Unnamed Product" },
-        description = HtmlSanitizer.toPlainText(caption),
-        price = "0", // Price should be extracted from post metadata if available
-        image = videoUrl ?: thumbnailUrl ?: "",
-        reelVideoUrl = videoUrl ?: "",
+        name = HtmlSanitizer.toPlainText(cleanCaption).ifBlank { "Unnamed Product" },
+        description = HtmlSanitizer.toPlainText(cleanCaption),
+        price = "0",
+        image = thumbnailUrl?.split(",")?.firstOrNull()?.trim() ?: mediaUrl,
+        reelVideoUrl = if (isVideoContent) mediaUrl else "",
         rating = likesCount.toDouble(),
         categoryId = type,
         categoryName = "",
         quantity = "0",
-        productImages = listOfNotNull(thumbnailUrl, videoUrl),
-        reelTitle = caption ?: "",
+        productImages = if (isVideoContent) extraImages else (listOf(mediaUrl) + extraImages).filter { it.isNotEmpty() },
+        reelTitle = cleanCaption,
         createdAt = parseTimestamp(createdAt),
-        // Carry over user info and post metadata
         username = username,
         displayName = displayName ?: "",
         userProfileImage = userProfileImage ?: "",
@@ -118,7 +144,9 @@ fun PostDto.toProduct(): Product {
         isLiked = isLiked,
         isBookmarked = isBookmarked,
         likesCount = likesCount,
-        commentsCount = commentsCount
+        commentsCount = commentsCount,
+        postUid = id,
+        soundUid = extractedSoundUid
     )
 }
 

@@ -238,7 +238,8 @@ class ProductViewModel(
                         // Use the real Firebase post_id from the linked promotion (for comments API)
                         // Falls back to null if no promotion — ViewModel handles gracefully
                         postUid = product.postUid.ifEmpty { null },
-                        isBookmarked = product.isBookmarked
+                        isBookmarked = product.isBookmarked,
+                        soundUid = product.soundUid.ifEmpty { null }
                     )
                 } catch (e: Exception) {
                     null
@@ -251,10 +252,15 @@ class ProductViewModel(
     
     fun refreshProducts() {
         viewModelScope.launch {
-            allProducts = emptyList()
-            productReels = emptyList()
-            loadAllProducts()
+            Log.d("PRODUCT_VM", "🔄 refreshProducts: reloading all products from backend")
+            loadAllProducts()  // This clears + reloads products AND generates reels
         }
+    }
+
+    /** Suspend version — caller awaits completion instead of fire-and-forget */
+    suspend fun refreshProductsSync() {
+        Log.d("PRODUCT_VM", "🔄 refreshProductsSync: reloading all products (suspend)")
+        loadAllProducts()
     }
     
     fun refreshReels() {

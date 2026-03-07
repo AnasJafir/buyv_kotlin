@@ -71,7 +71,7 @@ fun ErrorView(
             Button(
                 onClick = onRetry,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF6200EE)
+                    containerColor = Color(0xFFFF6D00)
                 )
             ) {
                 Icon(
@@ -205,7 +205,7 @@ fun LoadingView(
         ) {
             CircularProgressIndicator(
                 modifier = Modifier.size(48.dp),
-                color = Color(0xFF6200EE),
+                color = Color(0xFFFF6D00),
                 strokeWidth = 4.dp
             )
             
@@ -239,7 +239,7 @@ fun LoadingViewCompact(
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(24.dp),
-            color = Color(0xFF6200EE),
+            color = Color(0xFFFF6D00),
             strokeWidth = 3.dp
         )
         Spacer(modifier = Modifier.width(12.dp))

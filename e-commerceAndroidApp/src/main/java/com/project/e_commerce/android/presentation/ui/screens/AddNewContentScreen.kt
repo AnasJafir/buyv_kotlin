@@ -99,7 +99,8 @@ private fun uploadImagesToCloudinary(
     onPostCreated: (() -> Unit)? = null,
     onStepUpdate: ((String) -> Unit)? = null,
     onComplete: (() -> Unit)? = null,
-    onFailed: (() -> Unit)? = null
+    onFailed: (() -> Unit)? = null,
+    soundUid: String? = null
 ) {
     Log.d("UPLOAD_DEBUG", "🚀 Starting upload process:")
     Log.d("UPLOAD_DEBUG", "   Video URL: $videoUrl")
@@ -138,7 +139,8 @@ private fun uploadImagesToCloudinary(
             navController = navController,
             currentUserProvider = currentUserProvider,
             onComplete = onComplete,
-            onFailed = onFailed
+            onFailed = onFailed,
+            soundUid = soundUid
         )
         return
     }
@@ -181,7 +183,8 @@ private fun uploadImagesToCloudinary(
                             navController = navController,
                             currentUserProvider = currentUserProvider,
                             onComplete = onComplete,
-                            onFailed = onFailed
+                            onFailed = onFailed,
+                            soundUid = soundUid
                         )
                     }
                 }
@@ -228,7 +231,8 @@ private fun saveContentToBackend(
     navController: NavHostController,
     currentUserProvider: CurrentUserProvider,
     onComplete: (() -> Unit)? = null,
-    onFailed: (() -> Unit)? = null
+    onFailed: (() -> Unit)? = null,
+    soundUid: String? = null
 ) {
     Log.d("SAVE_DEBUG", "🚀 Saving content to backend...")
     Log.d("SAVE_DEBUG", "   Video URL: $videoUrl")
@@ -246,15 +250,33 @@ private fun saveContentToBackend(
             if (isNotEmpty()) append(" ")
             append(productTags.split(",").joinToString(" ") { "#${it.trim()}" })
         }
+        // Embed sound UID as hidden metadata tag in caption (parsed out on display)
+        if (!soundUid.isNullOrBlank()) {
+            append("\n{{sound:$soundUid}}")
+        }
     }
     
     // Create post via backend
+    // If videoUrl is empty (image-only post), use first image as media_url
+    val effectiveMediaUrl = videoUrl.ifBlank { imageUrls.firstOrNull() ?: "" }
+    val postType = if (videoUrl.isNotBlank()) "reel" else "photo"
+    
+    // Build additional data: extra image URLs (for thumbnail_url on backend) and sound UID
+    val additionalData = mutableMapOf<String, String>()
+    if (imageUrls.isNotEmpty()) {
+        additionalData["thumbnail_url"] = imageUrls.joinToString(",")
+    }
+    if (!soundUid.isNullOrBlank()) {
+        additionalData["sound_uid"] = soundUid
+    }
+    
     CoroutineScope(Dispatchers.Main).launch {
         try {
             val result = createPostUseCase(
-                type = "reel",
-                mediaUrl = videoUrl,
-                caption = caption.ifBlank { null }
+                type = postType,
+                mediaUrl = effectiveMediaUrl,
+                caption = caption.ifBlank { null },
+                additionalData = additionalData.ifEmpty { null }
             )
             
             when (result) {
@@ -285,8 +307,8 @@ private fun saveContentToBackend(
                     }
                     
                     onComplete?.invoke()
+                    // onPostCreated handles navigation + feed refresh (see MyNavHost)
                     onPostCreated?.invoke()
-                    navController.popBackStack()
                 }
                 is Result.Error -> {
                     Log.e("SAVE_DEBUG", "❌ Failed to create post: ${result.error}")
@@ -995,8 +1017,9 @@ fun AddNewContentScreen(
                 }
                 
                 val reelUri = reelVideoUri.value
-                if (reelUri == null) {
-                    Toast.makeText(context, "Please select a reel video", Toast.LENGTH_SHORT).show()
+                // At least one media is required (video or images)
+                if (reelUri == null && productImageUris.isEmpty()) {
+                    Toast.makeText(context, "Please select a video or at least one image", Toast.LENGTH_SHORT).show()
                     return@Button
                 }
                 // Only validate product details when no marketplace product is linked
@@ -1007,63 +1030,78 @@ fun AddNewContentScreen(
 
                 // Start upload — show progress indicator
                 isUploading = true
-                uploadStep = "Uploading video..."
 
-                // 1) Upload the video to Cloudinary using unsigned upload with preset
-                MediaManager.get().upload(reelUri)
-                    .unsigned(CloudinaryConfig.UPLOAD_PRESET)
-                    .option("public_id", "reels/${System.currentTimeMillis()}")
-                    .option("folder", CloudinaryConfig.Folders.REELS)
-                    .option("resource_type", "video")
-                    .callback(object : UploadCallback {
-                        override fun onStart(requestId: String) {
-                            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                                uploadStep = "Uploading video..."
+                if (reelUri != null) {
+                    // Path A: Has video — upload video first, then images
+                    uploadStep = "Uploading video..."
+                    MediaManager.get().upload(reelUri)
+                        .unsigned(CloudinaryConfig.UPLOAD_PRESET)
+                        .option("public_id", "reels/${System.currentTimeMillis()}")
+                        .option("folder", CloudinaryConfig.Folders.REELS)
+                        .option("resource_type", "video")
+                        .callback(object : UploadCallback {
+                            override fun onStart(requestId: String) {
+                                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                    uploadStep = "Uploading video..."
+                                }
                             }
-                        }
-                        
-                        override fun onSuccess(requestId: String, resultData: Map<Any?, Any?>) {
-                            val videoUrl = resultData["secure_url"] as String
                             
-                            // Use Handler to post to main thread
-                            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                                uploadStep = if (productImageUris.isNotEmpty()) "Uploading images..." else "Saving reel..."
-                                // 2) Upload images to Cloudinary and save to backend
-                                uploadImagesToCloudinary(
-                                    videoUrl, createPostUseCase, marketplaceApi, context, productImageUris,
-                                    selectedCategory, description, productName, productPrice,
-                                    productQuantity, reelTitle, productTags, sizes, colorQuantities, navController,
-                                    selectedMarketplaceProduct,
-                                    currentUserProvider,
-                                    onPostCreated = onPostCreated,
-                                    onStepUpdate = { step -> uploadStep = step },
-                                    onComplete = { isUploading = false },
-                                    onFailed = { isUploading = false }
-                                )
+                            override fun onSuccess(requestId: String, resultData: Map<Any?, Any?>) {
+                                val videoUrl = resultData["secure_url"] as String
+                                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                    uploadStep = if (productImageUris.isNotEmpty()) "Uploading images..." else "Saving reel..."
+                                    uploadImagesToCloudinary(
+                                        videoUrl, createPostUseCase, marketplaceApi, context, productImageUris,
+                                        selectedCategory, description, productName, productPrice,
+                                        productQuantity, reelTitle, productTags, sizes, colorQuantities, navController,
+                                        selectedMarketplaceProduct,
+                                        currentUserProvider,
+                                        onPostCreated = onPostCreated,
+                                        onStepUpdate = { step -> uploadStep = step },
+                                        onComplete = { isUploading = false },
+                                        onFailed = { isUploading = false },
+                                        soundUid = activeSoundUid.value
+                                    )
+                                }
                             }
-                        }
-                        
-                        override fun onError(requestId: String, error: ErrorInfo) {
-                            Log.e("UPLOAD_DEBUG", "❌ Video upload FAILED: code=${error.code}, desc=${error.description}")
-                            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                                isUploading = false
-                                Toast.makeText(context, "Video upload failed: ${error.description}", Toast.LENGTH_LONG).show()
+                            
+                            override fun onError(requestId: String, error: ErrorInfo) {
+                                Log.e("UPLOAD_DEBUG", "❌ Video upload FAILED: code=${error.code}, desc=${error.description}")
+                                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                    isUploading = false
+                                    Toast.makeText(context, "Video upload failed: ${error.description}", Toast.LENGTH_LONG).show()
+                                }
                             }
-                        }
-                        
-                        override fun onReschedule(requestId: String, error: ErrorInfo) {
-                            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                                Toast.makeText(context, "Rescheduling video upload", Toast.LENGTH_SHORT).show()
+                            
+                            override fun onReschedule(requestId: String, error: ErrorInfo) {
+                                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                    Toast.makeText(context, "Rescheduling video upload", Toast.LENGTH_SHORT).show()
+                                }
                             }
-                        }
-                        
-                        override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {
+                            
+                            override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {
                             val percent = if (totalBytes > 0) (bytes * 100 / totalBytes).toInt() else 0
                             android.os.Handler(android.os.Looper.getMainLooper()).post {
                                 uploadStep = "Uploading video ($percent%)..."
                             }
                         }
                     }).dispatch()
+                } else {
+                    // Path B: No video, images only — upload images then save with first image as media_url
+                    uploadStep = "Uploading images..."
+                    uploadImagesToCloudinary(
+                        "", createPostUseCase, marketplaceApi, context, productImageUris,
+                        selectedCategory, description, productName, productPrice,
+                        productQuantity, reelTitle, productTags, sizes, colorQuantities, navController,
+                        selectedMarketplaceProduct,
+                        currentUserProvider,
+                        onPostCreated = onPostCreated,
+                        onStepUpdate = { step -> uploadStep = step },
+                        onComplete = { isUploading = false },
+                        onFailed = { isUploading = false },
+                        soundUid = activeSoundUid.value
+                    )
+                }
             },
             enabled = !isUploading,
             modifier = Modifier

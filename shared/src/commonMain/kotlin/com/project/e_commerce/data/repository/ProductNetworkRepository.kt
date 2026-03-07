@@ -20,11 +20,11 @@ class ProductNetworkRepository(
     
     override suspend fun getAllProducts(): Result<List<Product>> {
         return try {
-            val posts = postApi.getFeed(skip = 0, limit = 100)
-            // Only convert reel-type posts to Products for the reels feed
+            val posts = postApi.getFeed(offset = 0, limit = 100)
+            // Convert reel and photo posts to Products for the feed
             // Shadow product posts (type="product") should NOT appear as reels
             val products = posts
-                .filter { it.type == "reel" }
+                .filter { it.type == "reel" || it.type == "photo" }
                 .map { it.toProduct() }
             Result.Success(products)
         } catch (e: ClientRequestException) {
@@ -132,7 +132,7 @@ class ProductNetworkRepository(
     override suspend fun getPopularProducts(limit: Int): Result<List<Product>> {
         return try {
             // Get all products and sort by likes (popularity)
-            val posts = postApi.getFeed(skip = 0, limit = limit * 2)
+            val posts = postApi.getFeed(offset = 0, limit = limit * 2)
             val products = posts
                 .sortedByDescending { it.likesCount }
                 .take(limit)
@@ -149,7 +149,7 @@ class ProductNetworkRepository(
     
     override suspend fun getRecentProducts(limit: Int): Result<List<Product>> {
         return try {
-            val posts = postApi.getFeed(skip = 0, limit = limit * 2)
+            val posts = postApi.getFeed(offset = 0, limit = limit * 2)
             val products = posts
                 .take(limit)
                 .map { it.toProduct() }

@@ -29,6 +29,25 @@ class SoundPageViewModel(
     fun loadSoundData(soundUid: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+
+            // If soundUid is actually a video URL (from reel's music button),
+            // don't try to look it up in the sounds API — use it directly as audio source
+            if (soundUid.startsWith("http")) {
+                _uiState.value = SoundPageUiState(
+                    isLoading = false,
+                    soundTitle = "Original Sound",
+                    soundAuthor = "",
+                    postsCount = "0 posts",
+                    audioUrl = soundUid,
+                    coverImageUrl = "",
+                    genre = "",
+                    duration = 0,
+                    isFavorite = false,
+                    error = null
+                )
+                return@launch
+            }
+
             when (val result = getSoundDetailsUseCase(soundUid)) {
                 is Result.Success -> {
                     val sound = result.data

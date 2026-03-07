@@ -529,7 +529,8 @@ fun ProfileScreen(navController: NavHostController) {
                 }
             }
         }
-        }
+        } // closes LazyColumn
+        } // closes Box (UPLOAD-001 wrapper)
     }
 }
 
@@ -1173,21 +1174,6 @@ fun UserLikedGrid(likedContent: List<com.project.e_commerce.android.domain.model
                 }
             }
         }
-        // UPLOAD-001: FAB to open upload screen
-        FloatingActionButton(
-            onClick = { navController.navigate(Screens.ProfileScreen.AddNewContentScreen.route) },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 80.dp),
-            containerColor = Color(0xFFFF6F00)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Upload content",
-                tint = Color.White
-            )
-        }
-        } // closes Box
     }
 }
 

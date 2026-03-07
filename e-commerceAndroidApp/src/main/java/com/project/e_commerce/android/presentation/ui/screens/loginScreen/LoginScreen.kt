@@ -59,18 +59,22 @@ fun LoginScreen(navController: NavController) {
         vm.handleGoogleSignInResult(result.data)
     }
 
-    // One-shot effects: Navigation + Toasts (بدون أي تغيير بصري)
+    // Reliable navigation: observe isLoggedIn state directly (avoids Channel effect loss)
+    LaunchedEffect(s.isLoggedIn) {
+        if (s.isLoggedIn) {
+            Log.d("CrashDebug", "LoginScreen: isLoggedIn=true, navigating to ReelsScreen")
+            navController.navigate(Screens.ReelsScreen.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
+
+    // One-shot effects: Toasts only (navigation handled above)
     LaunchedEffect(Unit) {
         vm.effect.collectLatest { eff ->
             when (eff) {
                 is AuthEffect.NavigateToHome -> {
-                    Log.d(
-                        "CrashDebug",
-                        "LoginScreen: NavigateToHome effect triggered, navigating to ReelsScreen"
-                    )
-                    navController.navigate(Screens.ReelsScreen.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
+                    // Navigation handled by isLoggedIn observer above
                 }
                 is AuthEffect.NavigateToLogin -> {
                     Log.d(

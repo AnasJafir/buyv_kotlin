@@ -5,6 +5,7 @@ import com.project.e_commerce.data.remote.api.ProductListResponse
 import com.project.e_commerce.domain.model.Result
 import com.project.e_commerce.domain.model.marketplace.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 
 /**
@@ -33,15 +34,14 @@ class MarketplaceRepository(
         limit: Int = 20
     ): Flow<Result<ProductListResponse>> = flow {
         emit(Result.Loading)
-        try {
-            val response = apiService.getProducts(
-                categoryId, minPrice, maxPrice, minCommission,
-                search, sortBy, page, limit
-            )
-            emit(Result.Success(response))
-        } catch (e: Exception) {
-            emit(Result.Error(com.project.e_commerce.domain.model.ApiError.fromException(e)))
-        }
+        val response = apiService.getProducts(
+            categoryId, minPrice, maxPrice, minCommission,
+            search, sortBy, page, limit
+        )
+        emit(Result.Success(response))
+    }.catch { e ->
+        val ex = if (e is Exception) e else Exception(e.message ?: "Unknown error")
+        emit(Result.Error(com.project.e_commerce.domain.model.ApiError.fromException(ex)))
     }
     
     /**

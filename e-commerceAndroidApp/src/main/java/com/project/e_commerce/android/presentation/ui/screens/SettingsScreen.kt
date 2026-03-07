@@ -48,6 +48,8 @@ import com.project.e_commerce.android.presentation.ui.navigation.Screens
 import com.project.e_commerce.data.local.TokenManager
 import com.project.e_commerce.data.local.CurrentUserProvider
 import org.koin.compose.koinInject
+import android.app.Activity
+import androidx.compose.ui.platform.LocalContext
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 
@@ -159,7 +161,8 @@ fun SettingsScreen(navController: NavHostController) {
         }
     }
 
-    // SET-005: Working language selector dialog
+    // SET-001: Working language selector dialog
+    val context = LocalContext.current
     if (showLanguageDialog) {
         AlertDialog(
             onDismissRequest = { showLanguageDialog = false },
@@ -178,6 +181,8 @@ fun SettingsScreen(navController: NavHostController) {
                                     val locale = LocaleListCompat.forLanguageTags(code)
                                     AppCompatDelegate.setApplicationLocales(locale)
                                     showLanguageDialog = false
+                                    // SET-001: Force activity recreate for non-AppCompatActivity hosts
+                                    (context as? Activity)?.recreate()
                                 }
                                 .padding(vertical = 12.dp, horizontal = 8.dp)
                         ) {

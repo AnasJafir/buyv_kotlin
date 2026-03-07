@@ -117,27 +117,9 @@ class MainActivity : ComponentActivity() {
                     token != null && !tokenManager.isTokenExpired()
                 }
                 
-                // Check if this is the first time the app is launched (show onboarding)
-                val context = this@MainActivity
-                val isFirstTime = remember {
-                    val prefs = context.getSharedPreferences("prefs", android.content.Context.MODE_PRIVATE)
-                    prefs.getBoolean("isFirstTime", true)
-                }
-                
-                val initialRoute = when {
-                    isFirstTime -> {
-                        Log.d("MainActivity", "First time user, starting at Splash/Onboarding")
-                        Screens.SplashScreen.route
-                    }
-                    isAuthenticated -> {
-                        Log.d("MainActivity", "User authenticated, starting at Reels")
-                        Screens.ReelsScreen.route
-                    }
-                    else -> {
-                        Log.d("MainActivity", "User not authenticated, starting at Login")
-                        Screens.LoginScreen.route
-                    }
-                }
+                // AUTH-003/004: Always start at Reels feed (no onboarding, guest browsing allowed)
+                // Login is only required on user interaction (cart, profile, post creation, etc.)
+                val initialRoute = Screens.ReelsScreen.route
                 
                 val tabScreens = listOf(
                     Screens.ReelsScreen,

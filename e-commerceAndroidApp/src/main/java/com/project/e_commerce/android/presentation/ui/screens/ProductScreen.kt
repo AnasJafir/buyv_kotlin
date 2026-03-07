@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import com.project.e_commerce.android.util.CategoryIcons
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -357,10 +358,10 @@ fun CategoryItem(
                     .background(Color(0xFFF5F5F5)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.ShoppingCart,
+                Image(
+                    painter = painterResource(CategoryIcons.forSlug(category.name)),
                     contentDescription = category.name,
-                    tint = Color(0xFFBDBDBD)
+                    modifier = Modifier.size(36.dp)
                 )
             }
         }

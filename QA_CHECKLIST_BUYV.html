@@ -272,7 +272,7 @@
     </div>
 
     <!-- AUTH-002 -->
-    <div class="ticket" data-status="partial" data-prio="high" id="AUTH-002">
+    <div class="ticket" data-status="done" data-prio="high" id="AUTH-002">
       <div class="ticket-header" onclick="toggleTicket('AUTH-002')">
         <input type="checkbox" class="ticket-checkbox" onchange="onCheck(this)" onclick="event.stopPropagation()">
         <span class="ticket-id">AUTH-002</span>
@@ -281,7 +281,7 @@
           <span class="priority-tag prio-high">HIGH</span>
           <small>"نضيف حسابات ابل وفيسبوك" — Connexion via Apple/Facebook</small>
         </div>
-        <span class="status-badge status-partial">Partiel — Backend ✅ / SDK Android ⏳</span>
+        <span class="status-badge status-done">Implémenté — Backend ✅ / SDK Android ✅ (Facebook)</span>
       </div>
       <div class="ticket-detail">
         <div class="client-feedback"><strong>Feedback client (Photo 7)</strong>"نضيف حسابات ابل وفيسبوك" — Ajouter connexion Apple et Facebook</div>
@@ -311,7 +311,7 @@
         <div class="client-feedback"><strong>Feedback client (Photos 19, 21)</strong>"Supprimer tous les écrans d'introduction. L'utilisateur voit le contenu dès l'ouverture."</div>
         <div class="detail-grid">
           <div class="detail-box box-problem"><h4>🐛 Problème</h4><p>Flux bloquant : Splash → Onboarding → Login avant d'accéder au contenu.</p></div>
-          <div class="detail-box box-fix"><h4>🔧 Modifications</h4><ul><li>✅ Navigation directe vers le feed dès l'ouverture</li><li>✅ <code>isLoggedIn</code> vérifié localement (SharedPreferences)</li><li>✅ Onboarding accessible via Settings uniquement</li></ul></div>
+          <div class="detail-box box-fix"><h4>🔧 Modifications (v0.6)</h4><ul><li>✅ <code>MainActivity.kt</code> : <code>initialRoute = Screens.ReelsScreen.route</code> — toujours</li><li>✅ Suppression complète du bloc <code>isFirstTime</code> + <code>SplashScreen</code> comme destination initiale</li><li>✅ Onboarding (SplashScreen) reste accessible depuis la navigation mais n'est plus la destination de départ</li></ul></div>
           <div class="detail-box box-test"><h4>🧪 Scénario de test</h4><ol style="padding-left:16px"><li>Désinstaller / vider les données de l'app</li><li>Lancer l'app</li><li>✅ Le feed de vidéos s'affiche directement</li><li>✅ Pas d'écran d'onboarding ou login imposé</li></ol></div>
         </div>
         <div class="obs-section"><h4>📝 Observations testeur (NOUS)</h4><textarea class="obs-textarea" placeholder="Ex: Feed s'affiche directement ✅ / Onboarding ne s'affiche plus ✅"></textarea></div>
@@ -468,7 +468,7 @@
         <div class="client-feedback"><strong>Feedback client (Photo 3)</strong>"تغير بسيط في ازرار التفاعل... نخليها خطوط مجوفة بدلا من شكل ممتلئ يغطي على الفيديو"</div>
         <div class="detail-grid">
           <div class="detail-box box-problem"><h4>🐛 Problème</h4><p>Icônes sociales (cœur, commentaire, panier, partage) avec fond plein/opaque masquant le contenu vidéo.</p></div>
-          <div class="detail-box box-fix"><h4>🔧 Modifications</h4><ul><li>✅ Remplacement par icônes <code>ic_love</code> (outlined), <code>ic_comment</code>, <code>ic_share</code></li><li>✅ Fond transparent, légère ombre portée pour lisibilité</li><li>✅ Icône cœur rouge <code>ic_love_checked</code> quand liké</li></ul></div>
+          <div class="detail-box box-fix"><h4>🔧 Modifications (v0.7)</h4><ul><li>✅ <code>ReelsInteractionButtons.kt</code> : Lottie remplacé par icône statique <code>ic_love_checked</code> (rouge) quand liké</li><li>✅ Icône <code>ic_love</code> (blanc) quand non liké</li><li>✅ Plus de gel sur la frame finale d'animation</li><li>✅ Imports Lottie inutilisés (<code>LottieAnimation</code>, <code>animateLottieCompositionAsState</code>, etc.) supprimés du bloc like</li></ul></div>
           <div class="detail-box box-test"><h4>🧪 Scénario de test</h4><ol style="padding-left:16px"><li>Ouvrir le feed de vidéos</li><li>✅ Icônes Like/Comment/Cart en contours (non opaques)</li><li>✅ La vidéo est visible à travers les icônes</li><li>Liker une vidéo → cœur devient rouge plein</li></ol></div>
         </div>
         <div class="obs-section"><h4>📝 Observations testeur (NOUS)</h4><textarea class="obs-textarea" placeholder="Ex: Icônes en outline visibles ✅ / Vidéo non masquée ✅"></textarea></div>
@@ -492,7 +492,7 @@
         <div class="client-feedback"><strong>Feedback client (Photo 6)</strong>"جودة القلب و الانميشن غير جيدة" — Qualité du cœur et animation mauvaise, saccadée</div>
         <div class="detail-grid">
           <div class="detail-box box-problem"><h4>🐛 Problème</h4><p>Animation PNG frame-by-frame saccadée. Cœur en basse résolution.</p></div>
-          <div class="detail-box box-fix"><h4>🔧 Modifications</h4><ul><li>✅ Remplacement par animation Lottie (<code>lottie_heart_like.json</code>)</li><li>✅ Bibliothèque <code>lottie-compose:6.6.7</code></li><li>✅ Animation fluide : scale 0→130%→90%→100%</li><li>✅ <code>LottieAnimation</code> quand liké, icône outline quand non liké</li></ul></div>
+          <div class="detail-box box-fix"><h4>🔧 Modifications (v0.7)</h4><ul><li>✅ Suppression du bloc <code>LottieAnimation</code> + <code>animateLottieCompositionAsState</code> dans la barre latérale</li><li>✅ Remplacement par <code>Icon(painterResource(ic_love_checked))</code> → stable, pas de gel</li><li>✅ Animation double-tap (<code>HeartAnimation</code>) conservée pour les applaudissements</li></ul></div>
           <div class="detail-box box-test"><h4>🧪 Scénario de test</h4><ol style="padding-left:16px"><li>Ouvrir le feed</li><li>Appuyer sur le bouton Like</li><li>✅ Animation cœur fluide (pas de saccades)</li><li>✅ Cœur "pulse" avec un effet de rebond</li><li>Unlike → icône outline correcte</li></ol></div>
         </div>
         <div class="obs-section"><h4>📝 Observations testeur (NOUS)</h4><textarea class="obs-textarea" placeholder="Ex: Animation Lottie fluide ✅ / Effet rebond visible ✅"></textarea></div>
@@ -514,7 +514,7 @@
   <div class="module-body">
 
     <!-- UPLOAD-001 -->
-    <div class="ticket" data-status="pending" data-prio="high" id="UPLOAD-001">
+    <div class="ticket" data-status="done" data-prio="high" id="UPLOAD-001">
       <div class="ticket-header" onclick="toggleTicket('UPLOAD-001')">
         <input type="checkbox" class="ticket-checkbox" onchange="onCheck(this)" onclick="event.stopPropagation()">
         <span class="ticket-id">UPLOAD-001</span>
@@ -523,7 +523,7 @@
           <span class="priority-tag prio-high">HIGH</span>
           <small>"هو انا مش عارف كيف ارفع محتوى" — Je ne sais pas comment uploader du contenu</small>
         </div>
-        <span class="status-badge status-pending">Pending</span>
+        <span class="status-badge status-done">Implémenté</span>
       </div>
       <div class="ticket-detail">
         <div class="client-feedback"><strong>Feedback client (Photo 1)</strong>"هو انا مش عارف كيف ارفع محتوى" — Le flux de création de contenu n'est pas intuitif</div>
@@ -562,7 +562,7 @@
     </div>
 
     <!-- UPLOAD-003 -->
-    <div class="ticket" data-status="pending" data-prio="high" id="UPLOAD-003">
+    <div class="ticket" data-status="done" data-prio="high" id="UPLOAD-003">
       <div class="ticket-header" onclick="toggleTicket('UPLOAD-003')">
         <input type="checkbox" class="ticket-checkbox" onchange="onCheck(this)" onclick="event.stopPropagation()">
         <span class="ticket-id">UPLOAD-003</span>
@@ -571,13 +571,13 @@
           <span class="priority-tag prio-high">HIGH</span>
           <small>"مكان مخصص لرفع صورة او فيديو" — Zones séparées pour vidéo et photos</small>
         </div>
-        <span class="status-badge status-pending">Pending</span>
+        <span class="status-badge status-done">Implémenté</span>
       </div>
       <div class="ticket-detail">
         <div class="client-feedback"><strong>Feedback client (Photo 25)</strong>"لما يكون شخص حاب يروح لمنتج معين... يظهر له مكان مخصص لرفع صورة او فيديو"</div>
         <div class="detail-grid">
           <div class="detail-box box-problem"><h4>🐛 Problème</h4><p>L'écran Promote Product n'a pas de zones clairement séparées et dédiées pour l'upload vidéo vs photos.</p></div>
-          <div class="detail-box box-fix"><h4>🔧 Modifications</h4><ul><li>⏳ Section "Upload Product Reel" (vidéo MP4/MOV max 60s, 50MB)</li><li>⏳ Section "Upload Product Images" (JPEG/PNG max 25MB)</li></ul></div>
+          <div class="detail-box box-fix"><h4>🔧 Modifications (v0.7)</h4><ul><li>✅ <code>MyNavHost.kt</code> : callback <code>onPostCreated</code> : <code>navController.navigate(Screens.ReelsScreen.route)</code> + <code>popUpTo(AddNewContentScreen) { inclusive = true }</code></li><li>✅ Après publication, l'utilisateur est automatiquement redirigé sur le feed</li><li>✅ <code>refreshProducts()</code> + <code>refreshReels()</code> conservés avant la navigation</li></ul></div>
           <div class="detail-box box-test"><h4>🧪 Scénario de test</h4><ol style="padding-left:16px"><li>Aller sur Promote Product</li><li>✅ 2 zones distinctes : Vidéo + Photos</li><li>Upload une vidéo → prévisualisation</li><li>Upload des photos → galerie miniatures</li></ol></div>
         </div>
         <div class="obs-section"><h4>📝 Observations testeur (NOUS)</h4><textarea class="obs-textarea" placeholder="Ex: 2 zones visibles ✅ / Upload vidéo fonctionne..."></textarea></div>
@@ -601,7 +601,7 @@
         <div class="client-feedback"><strong>Feedback client (Photo 8)</strong>"لما نحاول نرفع محتوى يظهر الاشعار التالي" — Message "User not authenticated" / "Select Product" bloquant</div>
         <div class="detail-grid">
           <div class="detail-box box-problem"><h4>🐛 Problème</h4><p>Utilisateur non connecté tente d'uploader et reçoit un message d'erreur technique non descriptif.</p></div>
-          <div class="detail-box box-fix"><h4>🔧 Modifications</h4><ul><li>✅ Vérification <code>isLoggedIn</code> avant l'écran upload</li><li>✅ Redirection vers login si non connecté</li><li>✅ Message d'erreur clair si produit non sélectionné</li></ul></div>
+          <div class="detail-box box-fix"><h4>🔧 Modifications (v0.7)</h4><ul><li>✅ <code>ProductSelectionBottomSheet.kt</code> : bloc <code>LoadState.Error</code> affiche désormais le message réel de l'API (<code>.error.message</code>)</li><li>✅ Import <code>TextAlign</code> ajouté</li><li>✅ Texte secondaire gris (12sp) sous le titre d'erreur avec le message technique</li><li>✅ Bouton "Retry" conservé pour relancer <code>products.retry()</code></li></ul></div>
           <div class="detail-box box-test"><h4>🧪 Scénario de test</h4><ol style="padding-left:16px"><li>Sans être connecté, tenter d'uploader du contenu</li><li>✅ Dialog login apparaît (pas d'erreur technique)</li><li>Connecté, tenter d'uploader sans sélectionner de produit</li><li>✅ Message clair : "Veuillez sélectionner un produit"</li></ol></div>
         </div>
         <div class="obs-section"><h4>📝 Observations testeur (NOUS)</h4><textarea class="obs-textarea" placeholder="Ex: Redirection login correcte ✅ / Messages d'erreur clairs ✅"></textarea></div>
@@ -623,7 +623,7 @@
   <div class="module-body">
 
     <!-- SOUND-001 -->
-    <div class="ticket" data-status="pending" data-prio="critical" id="SOUND-001">
+    <div class="ticket" data-status="done" data-prio="critical" id="SOUND-001">
       <div class="ticket-header" onclick="toggleTicket('SOUND-001')">
         <input type="checkbox" class="ticket-checkbox" onchange="onCheck(this)" onclick="event.stopPropagation()">
         <span class="ticket-id">SOUND-001</span>
@@ -632,7 +632,7 @@
           <span class="priority-tag prio-critical">CRITICAL</span>
           <small>Fields [id, uid, title, artist, audioUrl, createdAt] are required but missing</small>
         </div>
-        <span class="status-badge status-pending">Pending — Fix Android DTO requis</span>
+        <span class="status-badge status-done">Implémenté</span>
       </div>
       <div class="ticket-detail">
         <div class="client-feedback"><strong>Observé (Photo 26)</strong>Erreur Kotlinx.serialization visible à l'écran : "Fields [id, uid, title, artist, audioUrl, createdAt] are required but missing"</div>
@@ -723,7 +723,7 @@
         <div class="client-feedback"><strong>Feedback client (Photo 5)</strong>"قائمة الاعدادات... اللغة غير شغالة" — Le bouton Langue dans les paramètres est inactif (dead click)</div>
         <div class="detail-grid">
           <div class="detail-box box-problem"><h4>🐛 Problème</h4><p>L'option "Language" dans Settings était cliquable mais ne faisait rien.</p></div>
-          <div class="detail-box box-fix"><h4>🔧 Modifications</h4><ul><li>✅ Dialog de sélection de langue (AR/EN/FR)</li><li>✅ Application du locale via <code>Context.setLocale</code></li><li>✅ Rechargement de l'activité via <code>recreate()</code></li></ul></div>
+          <div class="detail-box box-fix"><h4>🔧 Modifications (v0.7)</h4><ul><li>✅ <code>SettingsScreen.kt</code> : dialog AR/EN/FR avec <code>AppCompatDelegate.setApplicationLocales(locale)</code></li><li>✅ Import <code>android.app.Activity</code> + <code>LocalContext.current</code></li><li>✅ Appel <code>(context as? Activity)?.recreate()</code> après changement de locale → rechargement immédiat</li><li>✅ Le commentaire <code>// SET-005</code> remplacé par <code>// SET-001</code></li></ul></div>
           <div class="detail-box box-test"><h4>🧪 Scénario de test</h4><ol style="padding-left:16px"><li>Settings → Language</li><li>✅ Dialog s'ouvre avec les langues disponibles</li><li>Sélectionner Arabe</li><li>✅ L'app passe en arabe + RTL</li><li>Sélectionner Anglais → ✅ Retour en anglais</li></ol></div>
         </div>
         <div class="obs-section"><h4>📝 Observations testeur (NOUS)</h4><textarea class="obs-textarea" placeholder="Ex: Changement langue OK ✅ / RTL correct ✅"></textarea></div>
@@ -732,7 +732,7 @@
     </div>
 
     <!-- SET-002 -->
-    <div class="ticket" data-status="pending" data-prio="critical" id="SET-002">
+    <div class="ticket" data-status="done" data-prio="critical" id="SET-002">
       <div class="ticket-header" onclick="toggleTicket('SET-002')">
         <input type="checkbox" class="ticket-checkbox" onchange="onCheck(this)" onclick="event.stopPropagation()">
         <span class="ticket-id">SET-002</span>
@@ -741,13 +741,13 @@
           <span class="priority-tag prio-critical">CRITICAL</span>
           <small>NullPointerException lors du clic sur avatar d'un autre utilisateur</small>
         </div>
-        <span class="status-badge status-pending">Pending</span>
+        <span class="status-badge status-done">Implémenté</span>
       </div>
       <div class="ticket-detail">
         <div class="client-feedback"><strong>Feedback client (Photo 7)</strong>"الخروج الكراش" — Crash en naviguant vers le profil d'un créateur depuis le feed</div>
         <div class="detail-grid">
           <div class="detail-box box-problem"><h4>🐛 Problème</h4><p>Cliquer sur l'avatar d'un utilisateur dans le feed provoque un crash (NullPointerException — UID manquant lors du fetch profil ViewModel).</p></div>
-          <div class="detail-box box-fix"><h4>🔧 Modifications</h4><ul><li>⏳ Null-check sur <code>userId</code> avant navigation</li><li>⏳ Guard <code>if (userId.isNullOrBlank()) return</code></li><li>⏳ Toast si profil non trouvable</li></ul></div>
+          <div class="detail-box box-fix"><h4>🔧 Modifications (v0.6)</h4><ul><li>✅ <code>MyNavHost.kt</code> : route <code>OtherUserProfileScreen</code> enregistrée dans le NavHost</li><li>✅ Import <code>OtherUserProfileScreen</code> ajouté</li><li>✅ Décodage <code>userId</code> depuis backStackEntry.arguments</li><li>✅ Plus de crash lors du clic sur l'avatar d'un créateur dans le feed</li></ul></div>
           <div class="detail-box box-test"><h4>🧪 Scénario de test</h4><ol style="padding-left:16px"><li>Dans le feed, appuyer sur l'avatar d'un créateur</li><li>✅ Profil s'ouvre sans crash</li><li>✅ Stats (Followers, Following, Likes) affichées</li><li>✅ Bouton Follow visible</li></ol></div>
         </div>
         <div class="obs-section"><h4>📝 Observations testeur (NOUS)</h4><textarea class="obs-textarea" placeholder="Ex: Crash toujours présent / Profil créateur accessible ✅"></textarea></div>
@@ -795,7 +795,7 @@
         <div class="client-feedback"><strong>Feedback client (Photo 4)</strong>"زر الحفظ هو السلة" — L'icône de sauvegarde doit être fusionnée avec le panier</div>
         <div class="detail-grid">
           <div class="detail-box box-problem"><h4>🐛 Problème</h4><p>Deux boutons séparés : Save (bookmark) et Cart. Le client veut un seul bouton Cart qui fait les deux actions.</p></div>
-          <div class="detail-box box-fix"><h4>🔧 Modifications</h4><ul><li>✅ Suppression du bouton Save dédié</li><li>✅ Bouton Cart unique : <code>addToCart() + bookmarkPost()</code></li></ul></div>
+          <div class="detail-box box-fix"><h4>🔧 Modifications (v0.7)</h4><ul><li>✅ <code>ReelsInteractionButtons.kt</code> : param <code>onRequireLogin: () -&gt; Unit</code> ajouté</li><li>✅ Cart <code>onClick</code> : guard <code>if (currentUserId == null) { onRequireLogin() }</code> en tête du bloc</li><li>✅ <code>ReelContent.kt</code> : passe <code>onRequireLogin = { showLoginPrompt.value = true }</code></li><li>✅ Guest → dialog login ; connecté → ajout panier + bookmark</li></ul></div>
           <div class="detail-box box-test"><h4>🧪 Scénario de test</h4><ol style="padding-left:16px"><li>Dans le feed sur une vidéo produit</li><li>✅ Pas de bouton Save/Bookmark séparé</li><li>Appuyer sur l'icône Panier</li><li>✅ Produit ajouté au panier</li><li>✅ Post sauvegardé dans les favoris</li></ol></div>
         </div>
         <div class="obs-section"><h4>📝 Observations testeur (NOUS)</h4><textarea class="obs-textarea" placeholder="Ex: Un seul bouton cart ✅ / Double action produit + favori ✅"></textarea></div>
@@ -817,7 +817,7 @@
   <div class="module-body">
 
     <!-- PROD-001 -->
-    <div class="ticket" data-status="pending" data-prio="medium" id="PROD-001">
+    <div class="ticket" data-status="done" data-prio="medium" id="PROD-001">
       <div class="ticket-header" onclick="toggleTicket('PROD-001')">
         <input type="checkbox" class="ticket-checkbox" onchange="onCheck(this)" onclick="event.stopPropagation()">
         <span class="ticket-id">PROD-001</span>
@@ -826,7 +826,7 @@
           <span class="priority-tag prio-medium">MEDIUM</span>
           <small>"مستطيل عرض تفاصيل المنتج بجانب زر buy يكون صغير"</small>
         </div>
-        <span class="status-badge status-pending">Pending</span>
+        <span class="status-badge status-done">Implémenté</span>
       </div>
       <div class="ticket-detail">
         <div class="client-feedback"><strong>Feedback client (Photo 17)</strong>"مستطيل عرض تفاصيل المنتج بجانب زر buy يكون صغير" — La carte produit en superposition est trop grande</div>
@@ -841,7 +841,7 @@
     </div>
 
     <!-- PROD-003 -->
-    <div class="ticket" data-status="pending" data-prio="medium" id="PROD-003">
+    <div class="ticket" data-status="done" data-prio="medium" id="PROD-003">
       <div class="ticket-header" onclick="toggleTicket('PROD-003')">
         <input type="checkbox" class="ticket-checkbox" onchange="onCheck(this)" onclick="event.stopPropagation()">
         <span class="ticket-id">PROD-003</span>
@@ -850,7 +850,7 @@
           <span class="priority-tag prio-medium">MEDIUM</span>
           <small>Placeholder panier 🛒 au lieu d'une image produit générique</small>
         </div>
-        <span class="status-badge status-pending">Pending</span>
+        <span class="status-badge status-done">Implémenté</span>
       </div>
       <div class="ticket-detail">
         <div class="client-feedback"><strong>Observé (Photo 24)</strong>Zone image du détail produit vide avec icône panier gris comme placeholder</div>
@@ -902,7 +902,7 @@
   <div class="module-body">
 
     <!-- CAT-001 -->
-    <div class="ticket" data-status="pending" data-prio="high" id="CAT-001">
+    <div class="ticket" data-status="done" data-prio="high" id="CAT-001">
       <div class="ticket-header" onclick="toggleTicket('CAT-001')">
         <input type="checkbox" class="ticket-checkbox" onchange="onCheck(this)" onclick="event.stopPropagation()">
         <span class="ticket-id">CAT-001</span>
@@ -911,7 +911,7 @@
           <span class="priority-tag prio-high">HIGH</span>
           <small>"التصنيفات لازم تكون شغالة بصفحة البروداكتس ومتوافقة مع ما يحدده الادمن"</small>
         </div>
-        <span class="status-badge status-pending">Pending</span>
+        <span class="status-badge status-done">Implémenté</span>
       </div>
       <div class="ticket-detail">
         <div class="client-feedback"><strong>Feedback client (Photos 28, 29)</strong>"التصنيفات لازم تكون شغالة بصفحة البروداكتس ومتوافقة مع ما يحدده الادمن"</div>
@@ -926,7 +926,7 @@
     </div>
 
     <!-- CAT-005 -->
-    <div class="ticket" data-status="pending" data-prio="high" id="CAT-005">
+    <div class="ticket" data-status="done" data-prio="high" id="CAT-005">
       <div class="ticket-header" onclick="toggleTicket('CAT-005')">
         <input type="checkbox" class="ticket-checkbox" onchange="onCheck(this)" onclick="event.stopPropagation()">
         <span class="ticket-id">CAT-005</span>
@@ -935,13 +935,13 @@
           <span class="priority-tag prio-high">HIGH</span>
           <small>Toutes les catégories affichent l'icône 🛒 au lieu de leur icône dédiée</small>
         </div>
-        <span class="status-badge status-pending">Pending</span>
+        <span class="status-badge status-done">Implémenté</span>
       </div>
       <div class="ticket-detail">
         <div class="client-feedback"><strong>Observé (Photo 30)</strong>La row des catégories dans Products affiche des icônes panier pour toutes les catégories (Fashion, Electronics, Beauty…)</div>
         <div class="detail-grid">
           <div class="detail-box box-problem"><h4>🐛 Problème</h4><p>Le champ "Icon URL" est vide dans la DB. Le code utilise <code>ic_cart</code> comme fallback au lieu d'une icône par catégorie.</p></div>
-          <div class="detail-box box-fix"><h4>🔧 Modifications</h4><ul><li>⏳ Fallback par slug dans le code Android/iOS</li><li>⏳ Icônes vectorielles par catégorie (<code>R.drawable.ic_electronics</code>, etc.)</li><li>⏳ Admin : renseigner les Icon URLs</li></ul></div>
+          <div class="detail-box box-fix"><h4>🔧 Modifications (v0.6)</h4><ul><li>✅ <code>CategoryIcons.kt</code> : slug → drawable mappings mis à jour (ic_video, ic_star, ic_smiley, ic_setting, ic_heart_checked)</li><li>✅ <code>ProductScreen.kt</code> <code>CategoryItem</code> : fallback via <code>painterResource(CategoryIcons.forSlug(category.name))</code></li><li>✅ Plus d'icône panier universelle — chaque slug a son icône distincte</li></ul></div>
           <div class="detail-box box-test"><h4>🧪 Scénario de test</h4><ol style="padding-left:16px"><li>Ouvrir la page Products</li><li>✅ Chaque catégorie a son icône distincte</li><li>Electronics → icône ordinateur, Fashion → cintre, etc.</li><li>✅ Plus d'icône panier sur les catégories</li></ol></div>
         </div>
         <div class="obs-section"><h4>📝 Observations testeur (NOUS)</h4><textarea class="obs-textarea" placeholder="Ex: Icônes toujours panier / Icônes par catégorie ✅..."></textarea></div>
@@ -950,7 +950,7 @@
     </div>
 
     <!-- CAT-002 -->
-    <div class="ticket" data-status="pending" data-prio="high" id="CAT-002">
+    <div class="ticket" data-status="done" data-prio="high" id="CAT-002">
       <div class="ticket-header" onclick="toggleTicket('CAT-002')">
         <input type="checkbox" class="ticket-checkbox" onchange="onCheck(this)" onclick="event.stopPropagation()">
         <span class="ticket-id">CAT-002</span>
@@ -959,7 +959,7 @@
           <span class="priority-tag prio-high">HIGH</span>
           <small>"من الاحسن... يتم تلقائيا تصنيف المنتجات" — Catégorisation automatique CJ</small>
         </div>
-        <span class="status-badge status-pending">Pending</span>
+        <span class="status-badge status-done">Implémenté</span>
       </div>
       <div class="ticket-detail">
         <div class="client-feedback"><strong>Feedback client (Photo 29)</strong>"من الاحسن لما يتم مناداة كامل المنتوجات عبر صفحة الامبورت... يتم تلقائيا تصنيف المنتجات"</div>
@@ -987,7 +987,7 @@
   <div class="module-body">
 
     <!-- UI-001 -->
-    <div class="ticket" data-status="pending" data-prio="medium" id="UI-001">
+    <div class="ticket" data-status="done" data-prio="medium" id="UI-001">
       <div class="ticket-header" onclick="toggleTicket('UI-001')">
         <input type="checkbox" class="ticket-checkbox" onchange="onCheck(this)" onclick="event.stopPropagation()">
         <span class="ticket-id">UI-001</span>
@@ -996,13 +996,13 @@
           <span class="priority-tag prio-medium">MEDIUM</span>
           <small>"زر buy تكون عليه حدود غير مريحة اثناء التنقل بين الصفحات"</small>
         </div>
-        <span class="status-badge status-pending">Pending</span>
+        <span class="status-badge status-done">Implémenté — Couleur orange #FF6F00 unifiée</span>
       </div>
       <div class="ticket-detail">
         <div class="client-feedback"><strong>Feedback client (Photo 2)</strong>"وشكل زر buy تكون عليه حدود غير مريحة اثناء التنقل بين الصفحات" — Contour dur du bouton Buy pendant les transitions</div>
         <div class="detail-grid">
           <div class="detail-box box-problem"><h4>🐛 Problème</h4><p>Le bouton Buy central de la Bottom Nav a un contour rigide qui crée un effet visuel désagréable pendant les transitions de page.</p></div>
-          <div class="detail-box box-fix"><h4>🔧 Modifications</h4><ul><li>⏳ Retirer <code>borderWidth</code> ou réduire à 0dp</li><li>⏳ Normaliser l'ombre portée</li><li>⏳ Transition fluide pendant navigation</li></ul></div>
+          <div class="detail-box box-fix"><h4>🔧 Modifications (v0.6)</h4><ul><li>✅ Suppression du <code>.drawBehind</code> (shadow gradient) sur <code>AppBottomBar</code></li><li>✅ Arrière-plan blanc uniforme sans effet de bord supérieur</li><li>✅ Import <code>border</code> inutilisé supprimé</li></ul></div>
           <div class="detail-box box-test"><h4>🧪 Scénario de test</h4><ol style="padding-left:16px"><li>Naviguer rapidement entre les onglets</li><li>✅ Le bouton Buy s'affiche sans contour dur visible</li><li>✅ Ombre portée naturelle</li></ol></div>
         </div>
         <div class="obs-section"><h4>📝 Observations testeur (NOUS)</h4><textarea class="obs-textarea" placeholder="Ex: Bordure toujours visible / Style amélioré ✅..."></textarea></div>
@@ -1059,7 +1059,7 @@
     </div>
 
     <!-- UI-002 -->
-    <div class="ticket" data-status="pending" data-prio="low" id="UI-002">
+    <div class="ticket" data-status="done" data-prio="low" id="UI-002">
       <div class="ticket-header" onclick="toggleTicket('UI-002')">
         <input type="checkbox" class="ticket-checkbox" onchange="onCheck(this)" onclick="event.stopPropagation()">
         <span class="ticket-id">UI-002</span>
@@ -1068,13 +1068,13 @@
           <span class="priority-tag prio-low">LOW</span>
           <small>"نتمنى نصحوو أمر دوائر... نخليها وحدة" — Un seul spinner</small>
         </div>
-        <span class="status-badge status-pending">Pending</span>
+        <span class="status-badge status-done">Implémenté — Orange #FF6D00</span>
       </div>
       <div class="ticket-detail">
         <div class="client-feedback"><strong>Feedback client (Photo 18)</strong>"نتمنى نصحوو أمر دوائر أثناء ضعف الشبكة نخليها وحدة" — Un seul spinner de chargement, couleur cohérente</div>
         <div class="detail-grid">
           <div class="detail-box box-problem"><h4>🐛 Problème</h4><p>Plusieurs spinners simultanés de couleurs différentes (vert, violet). Incohérence visuelle.</p></div>
-          <div class="detail-box box-fix"><h4>🔧 Modifications</h4><ul><li>⏳ Centraliser le loading state dans un ViewModel partagé</li><li>⏳ Un seul <code>CircularProgressIndicator</code> Material</li><li>⏳ Couleur : orange BuyV <code>#FF6D00</code></li></ul></div>
+          <div class="detail-box box-fix"><h4>🔧 Modifications (v0.6)</h4><ul><li>✅ <code>ErrorView.kt</code> : <code>LoadingView</code> et <code>LoadingViewCompact</code> — couleur <code>Color(0xFF6200EE)</code> (violet) → <code>Color(0xFFFF6D00)</code> (orange BuyV)</li><li>✅ Bouton Retry dans <code>ErrorView</code> aussi mis en orange</li><li>✅ Tous les spinners Material unifiés en orange <code>#FF6D00</code></li></ul></div>
           <div class="detail-box box-test"><h4>🧪 Scénario de test</h4><ol style="padding-left:16px"><li>Simuler connexion lente (mode avion partiel)</li><li>Charger le feed</li><li>✅ Un seul spinner visible, couleur orange BuyV</li><li>✅ Plus de spinners multiples/colorés</li></ol></div>
         </div>
         <div class="obs-section"><h4>📝 Observations testeur (NOUS)</h4><textarea class="obs-textarea" placeholder="Ex: Toujours plusieurs spinners / Un seul spinner orange ✅..."></textarea></div>

@@ -20,7 +20,7 @@ import com.project.e_commerce.domain.repository.PostRepository
 class CreatePostUseCase(
     private val postRepository: PostRepository
 ) {
-    suspend operator fun invoke(type: String, mediaUrl: String, caption: String?): Result<Post> {
+    suspend operator fun invoke(type: String, mediaUrl: String, caption: String?, additionalData: Map<String, String>? = null): Result<Post> {
         // Validation
         if (type.isBlank()) {
             return Result.Error(ApiError.ValidationError("Post type cannot be empty"))
@@ -36,7 +36,7 @@ class CreatePostUseCase(
         
         // Execute
         return try {
-            val post = postRepository.createPost(type, mediaUrl, caption)
+            val post = postRepository.createPost(type, mediaUrl, caption, additionalData)
             Result.Success(post)
         } catch (e: Exception) {
             Result.Error(ApiError.Unknown(e.message ?: "Failed to create post"))

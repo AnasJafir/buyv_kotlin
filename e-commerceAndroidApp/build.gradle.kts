@@ -5,6 +5,7 @@ plugins {
     id("com.android.application")
     kotlin("android")
     id("org.jetbrains.kotlin.plugin.compose") // ✅ NEW
+    kotlin("plugin.serialization") version "2.2.10" // PROD-005: fix AdminLoginRequest serializer
     id("com.google.gms.google-services")
 }
 

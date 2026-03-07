@@ -59,23 +59,6 @@ fun AppBottomBar(
                 .height(64.dp)
                 .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
                 .background(Color.White)
-                .drawBehind {
-                    val shadowHeight = 12.dp.toPx()
-                    drawRoundRect(
-                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(
-                            28.dp.toPx(), 28.dp.toPx()
-                        ),
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color(0x11000000),
-                                Color.Transparent
-                            ),
-                            startY = 0f,
-                            endY = shadowHeight
-                        ),
-                        size = size
-                    )
-                }
         ) {
             Row(
                 Modifier

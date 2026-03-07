@@ -45,6 +45,7 @@ data class Reels(
     // Bridge: post UID for likes/comments/bookmarks
     val postUid: String? = null,
     val isBookmarked: Boolean = false,
+    val soundUid: String? = null,
 ) {
     companion object {
         fun fromProduct(product: Product): Reels {

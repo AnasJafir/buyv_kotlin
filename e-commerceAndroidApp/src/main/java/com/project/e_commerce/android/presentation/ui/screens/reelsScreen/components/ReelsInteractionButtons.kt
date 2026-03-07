@@ -62,7 +62,8 @@ fun ReelsInteractionButtons(
     onClickBookmarkButton: (Reels) -> Unit,
     cartViewModel: CartViewModel,
     reelsViewModel: ReelsScreenViewModel,
-    onDeletePost: (String) -> Unit = {}            // VIDEO-003: optional delete callback
+    onDeletePost: (String) -> Unit = {},           // VIDEO-003: optional delete callback
+    onRequireLogin: () -> Unit = {}                // SET-004: guest login guard
 ) {
     val currentUserProvider: CurrentUserProvider = koinInject()
     var currentUserId by remember { mutableStateOf<String?>(null) }
@@ -121,35 +122,19 @@ fun ReelsInteractionButtons(
                 onClick = { showDeleteConfirm = true }
             )
         } else {
-            // Like button with Lottie heart animation (VIDEO-005)
-            val lottieComposition by rememberLottieComposition(
-                LottieCompositionSpec.Asset("lottie_heart_like.json")
-            )
-            val lottieProgress by animateLottieCompositionAsState(
-                composition = lottieComposition,
-                isPlaying = reel.love.isLoved,
-                iterations = 1,
-                restartOnPlay = false,
-                speed = 1.5f
-            )
+            // Like button with static heart icon (VIDEO-005/006: replaced frozen Lottie)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.noRippleClickable { onClickLoveButton() }
             ) {
-                if (reel.love.isLoved) {
-                    LottieAnimation(
-                        composition = lottieComposition,
-                        progress = { lottieProgress },
-                        modifier = Modifier.size(36.dp)
-                    )
-                } else {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_love),
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
+                Icon(
+                    painter = painterResource(
+                        id = if (reel.love.isLoved) R.drawable.ic_love_checked else R.drawable.ic_love
+                    ),
+                    contentDescription = null,
+                    tint = if (reel.love.isLoved) Color(0xFFFF1744) else Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = reel.love.number.toString(),
@@ -180,7 +165,10 @@ fun ReelsInteractionButtons(
                 tint = if (isInCart) Color(0xFFFFC107) else Color.White,
                 onClick = {
                     Log.d("InteractionButtons", "Cart icon pressed for product ${reel.id}")
-                    if (isInCart) {
+                    // SET-004: guard cart actions behind login
+                    if (currentUserId == null) {
+                        onRequireLogin()
+                    } else if (isInCart) {
                         cartViewModel.removeItem(reel.id)
                         cartViewModel.refreshCart()
                         reelsViewModel.checkCartStatus(reel.id)
@@ -195,7 +183,6 @@ fun ReelsInteractionButtons(
                         cartViewModel.addToCart(cartItem)
                         cartViewModel.refreshCart()
                         reelsViewModel.checkCartStatus(reel.id)
-                        // SET-004: Auto-bookmark when adding to cart (Save = Cart unified)
                         onClickBookmarkButton(reel)
                     }
                 }
