@@ -55,6 +55,7 @@ def create_post(
         user_id=current_user.id,
         type=post_type,
         media_url=payload.media_url, # Input is PostCreate(CamelModel), alias mediaUrl -> media_url
+        thumbnail_url=(payload.additional_data or {}).get("thumbnail_url"),
         caption=payload.caption or None,
         likes_count=0,
     )
