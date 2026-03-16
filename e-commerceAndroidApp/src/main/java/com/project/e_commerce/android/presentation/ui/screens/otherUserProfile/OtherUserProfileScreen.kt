@@ -73,7 +73,24 @@ fun OtherUserProfileScreen(
         Pair(R.drawable.ic_reels, R.drawable.ic_reels),
         Pair(R.drawable.ic_products_filled, R.drawable.ic_products)
     )
-    
+
+    // Guard: blank userId means we landed here with no valid user ID
+    if (userId.isBlank()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text("User not found", fontSize = 18.sp, color = Color.Gray)
+                Spacer(modifier = Modifier.height(12.dp))
+                TextButton(onClick = { navController.popBackStack() }) {
+                    Text("Go Back", color = Color(0xFFFF6F00))
+                }
+            }
+        }
+        return
+    }
+
     if (uiState.isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),

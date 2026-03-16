@@ -50,6 +50,11 @@ class PostNetworkRepository(
         postApiService.deletePost(postId)
     }
     
+    override suspend fun getPostById(postId: String): Post {
+        val postDto = postApiService.getPostById(postId)
+        return postDto.toDomain()
+    }
+
     override suspend fun getLikedPosts(userId: String): List<Post> {
         val postDtos = postApiService.getPostsLikedByUser(userId)
         return postDtos.map { it.toDomain() }

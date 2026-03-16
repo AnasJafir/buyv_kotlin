@@ -46,7 +46,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.project.e_commerce.android.presentation.ui.navigation.Screens
-import com.project.e_commerce.android.presentation.ui.screens.reelsScreen.ReelsTopHeader
+import com.project.e_commerce.android.presentation.ui.screens.reelsScreen.components.ReelsTopHeader
 import com.project.e_commerce.android.presentation.viewModel.ProductViewModel
 import com.project.e_commerce.android.presentation.ui.composable.composableScreen.public.VideoThumbnail
 import com.project.e_commerce.android.R

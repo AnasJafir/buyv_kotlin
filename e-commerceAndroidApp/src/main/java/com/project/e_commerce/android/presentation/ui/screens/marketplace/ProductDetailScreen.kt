@@ -30,10 +30,10 @@ import coil3.compose.AsyncImage
 import com.project.e_commerce.android.presentation.ui.composable.common.ImageWithPlaceholder
 import com.project.e_commerce.android.presentation.ui.composable.common.ImageType
 import com.project.e_commerce.android.presentation.ui.composable.common.HtmlText
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.HorizontalPagerIndicator
-import com.google.accompanist.pager.rememberPagerState
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import com.project.e_commerce.android.presentation.viewModel.marketplace.ProductDetailUiState
 import com.project.e_commerce.android.presentation.viewModel.marketplace.ProductDetailViewModel
 import com.project.e_commerce.android.presentation.viewModel.marketplace.PromotionState
@@ -189,7 +189,7 @@ fun ProductDetailScreen(
 /**
  * Contenu principal avec détails du produit
  */
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ProductDetailContent(
     product: MarketplaceProduct,
@@ -202,7 +202,7 @@ private fun ProductDetailContent(
     ) {
         // Images carousel
         item {
-            val pagerState = rememberPagerState()
+            val pagerState = rememberPagerState(pageCount = { product.images.size })
             
             Box(
                 modifier = Modifier
@@ -211,7 +211,6 @@ private fun ProductDetailContent(
                     .background(Color.White)
             ) {
                 HorizontalPager(
-                    count = product.images.size,
                     state = pagerState,
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
@@ -224,15 +223,30 @@ private fun ProductDetailContent(
                     )
                 }
                 
-                // Indicateur de page
-                HorizontalPagerIndicator(
-                    pagerState = pagerState,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp),
-                    activeColor = Color(0xFFFF9800),
-                    inactiveColor = Color.White.copy(alpha = 0.5f)
-                )
+                // Page indicator dots
+                if (product.images.size > 1) {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .padding(16.dp)
+                    ) {
+                        repeat(product.images.size) { idx ->
+                            Box(
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .size(if (pagerState.currentPage == idx) 10.dp else 7.dp)
+                                    .background(
+                                        if (pagerState.currentPage == idx) Color(0xFFFF9800)
+                                        else Color.White.copy(alpha = 0.5f),
+                                        shape = CircleShape
+                                    )
+                            )
+                        }
+                    }
+                }
                 
                 // Badge commission
                 Surface(

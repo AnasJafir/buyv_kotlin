@@ -507,8 +507,20 @@ def delete_post(
     if post.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not allowed")
     post_type = post.type
-    # Clean up related product_promotions (post_id is the post UID string)
+    
+    from app.marketplace.models import ProductPromotion, MarketplaceProduct
+    
+    # 1. Obtenir les promotions liées avant de les supprimer
+    promotions = db.query(ProductPromotion).filter(ProductPromotion.post_id == post_uid).all()
+    for promo in promotions:
+        # 2. Vider la vidéo du produit si elle correspondait à ce post (évite que le produit marketplace conserve un reel supprimé)
+        product = db.query(MarketplaceProduct).filter(MarketplaceProduct.id == promo.product_id).first()
+        if product and product.reel_video_url == post.media_url:
+            product.reel_video_url = None
+    
+    # 3. Clean up related product_promotions
     db.query(ProductPromotion).filter(ProductPromotion.post_id == post_uid).delete()
+    
     # Delete the post (comments, likes, bookmarks cascade via FK)
     db.delete(post)
     if post_type == "reel":

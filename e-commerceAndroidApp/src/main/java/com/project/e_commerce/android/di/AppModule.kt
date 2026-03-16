@@ -547,6 +547,14 @@ val viewModelModule = module {
             )
         }
 
+        viewModel {
+            com.project.e_commerce.android.presentation.viewModel.addContent.AddNewContentViewModel(
+                currentUserProvider = get(),
+                createPostUseCase = get(),
+                marketplaceApi = get()
+            )
+        }
+
         single {
             val countriesApi = CountriesApi(get<HttpClient>(named("public")))
             android.util.Log.d("CrashDebug", "AppModule: CountriesApi created")

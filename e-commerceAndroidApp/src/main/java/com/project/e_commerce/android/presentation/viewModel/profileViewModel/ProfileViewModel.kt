@@ -325,6 +325,9 @@ class ProfileViewModel(
                 // Remove the deleted post from the local list
                 _userReels.value = _userReels.value.filter { it.id != postId }
                 
+                // Globably sync deleted reel
+                com.project.e_commerce.android.utils.PostEventBus.emit(com.project.e_commerce.android.utils.PostEvent.PostDeleted(postId))
+                
                 Log.d("ProfileViewModel", "✅ Post deleted successfully: $postId")
                 _deletePostState.value = DeletePostState.Success
             } catch (e: Exception) {

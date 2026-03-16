@@ -286,12 +286,44 @@ class ReelsScreenViewModel(
      * Refresh feed data WITHOUT scrolling to top.
      * Used when navigating to a specific reel (profile grid tap).
      */
-    fun refreshDataOnly() {
+    fun refreshDataOnly(targetReelId: String? = null) {
         viewModelScope.launch {
             Log.d("ReelsScreenViewModel", "🔄 refreshDataOnly called (no scrollToTop)")
             productViewModel.refreshProductsSync()  // AWAIT completion (no race condition)
             loadReelsWithRetry()
             // NO _scrollToTop emission — caller will handle scrolling to the target
+            if (targetReelId != null) {
+                injectSpecificReelIfNotExists(targetReelId)
+            }
+        }
+    }
+
+    private suspend fun injectSpecificReelIfNotExists(targetReelId: String) {
+        val currentList = _state.value
+        if (currentList.any { it.id == targetReelId || it.postUid == targetReelId }) return
+
+        try {
+            val result = postRepository.getPostById(targetReelId)
+            result.onSuccess { postDto ->
+                val newReel = Reels(
+                    id = postDto.id,
+                    userId = postDto.userId,
+                    userName = postDto.authorDisplayName?.takeIf { it.isNotBlank() } ?: postDto.authorUsername?.takeIf { it.isNotBlank() } ?: "User",
+                    userImage = com.project.e_commerce.android.R.drawable.profile,
+                    video = postDto.videoUrl?.takeIf { it.isNotBlank() }?.let { android.net.Uri.parse(it) },
+                    images = emptyList(),
+                    contentDescription = postDto.caption ?: "",
+                    postUid = postDto.id,
+                    soundUid = postDto.soundUid,
+                    comments = emptyList(),
+                    love = LoveItem(number = postDto.likeCount, isLoved = false)
+                )
+                val reelsWithStates = loadLikeAndCommentStates(listOf(newReel))
+                val finalReel = reelsWithStates.firstOrNull() ?: newReel
+                _state.emit(listOf(finalReel) + _state.value)
+            }
+        } catch (e: Exception) {
+            Log.e("ReelsScreenViewModel", "Failed to inject specific reel", e)
         }
     }
 

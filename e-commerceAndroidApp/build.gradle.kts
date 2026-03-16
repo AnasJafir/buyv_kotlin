@@ -169,8 +169,7 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-compose:3.3.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
     implementation("com.tbuonomo:dotsindicator:5.1.0")
-    implementation("com.google.accompanist:accompanist-pager:0.36.0")
-    implementation("com.google.accompanist:accompanist-pager-indicators:0.36.0")
+    // Accompanist pager removed — migrated to androidx.compose.foundation.pager (v0.16)
 
     // Media3
     implementation("androidx.media3:media3-exoplayer:1.2.1")

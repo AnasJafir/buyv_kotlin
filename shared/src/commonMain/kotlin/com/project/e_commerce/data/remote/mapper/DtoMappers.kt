@@ -134,7 +134,7 @@ fun PostDto.toProduct(): Product {
         categoryId = type,
         categoryName = "",
         quantity = "0",
-        productImages = if (isVideoContent) extraImages else (listOf(mediaUrl) + extraImages).filter { it.isNotEmpty() },
+        productImages = if (isVideoContent) extraImages else (listOf(mediaUrl) + extraImages).filter { it.isNotEmpty() }.distinct(),
         reelTitle = cleanCaption,
         createdAt = parseTimestamp(createdAt),
         username = username,

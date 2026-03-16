@@ -54,6 +54,22 @@ class ProductViewModel(
         private set
 
     init {
+        // Observe Global Deletion Events for products/reels
+        viewModelScope.launch {
+            com.project.e_commerce.android.utils.PostEventBus.events.collect { event ->
+                when (event) {
+                    is com.project.e_commerce.android.utils.PostEvent.PostDeleted -> {
+                        allProducts = allProducts.filter { it.id != event.postId && it.postUid != event.postId }
+                        featuredProducts = featuredProducts.filter { it.id != event.postId && it.postUid != event.postId }
+                        bestSellerProducts = bestSellerProducts.filter { it.id != event.postId && it.postUid != event.postId }
+                        categoryProducts = categoryProducts.filter { it.id != event.postId && it.postUid != event.postId }
+                        // Filter out from selected product reels locally
+                        productReels = productReels.filter { it.id != event.postId && it.postUid != event.postId }
+                    }
+                }
+            }
+        }
+
         // Charge les données automatiquement au démarrage
         Log.d("PRODUCT_VM", "🚀 ProductViewModel initialized, loading initial data...")
         loadInitialData()

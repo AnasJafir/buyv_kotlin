@@ -83,6 +83,11 @@ interface PostRepository {
     suspend fun checkPostBookmarkStatus(postId: String, userId: String): Boolean
 
     /**
+     * Get a specific post by ID.
+     */
+    suspend fun getPostById(postId: String): Post
+
+    /**
      * Get or create shadow post for marketplace product.
      * Returns the post UID linked to this marketplace product.
      */

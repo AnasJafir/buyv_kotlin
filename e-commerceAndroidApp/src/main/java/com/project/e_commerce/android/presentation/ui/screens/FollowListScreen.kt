@@ -42,8 +42,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import kotlinx.coroutines.launch
 import com.project.e_commerce.android.domain.model.FollowingStatus
 import com.project.e_commerce.android.domain.model.UserProfile
@@ -84,7 +84,7 @@ fun FollowListScreen(
         listOf("Followers", "Following")
     }
 
-    val pagerState = rememberPagerState(initialPage = startTabIndex)
+    val pagerState = rememberPagerState(initialPage = startTabIndex, pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
 
     // Load data when component is created
@@ -168,7 +168,7 @@ fun FollowListScreen(
             }
         }
 
-        HorizontalPager(count = tabs.size, state = pagerState) { page ->
+        HorizontalPager(state = pagerState) { page ->
             when (tabs[page]) {
                 "Followers" -> FollowersTab(
                     users = uiState.followers,

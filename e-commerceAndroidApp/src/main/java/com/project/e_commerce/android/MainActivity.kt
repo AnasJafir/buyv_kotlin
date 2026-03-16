@@ -30,9 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -327,29 +325,8 @@ class MainActivity : ComponentActivity() {
                                             .zIndex(1f)
                                             .padding(bottom = 12.dp)
                                             .size(64.dp)
-                                            .border(5.dp, Color.White, CircleShape)
-                                            .drawBehind {
-                                                val shadowRadius = size.width * 0.58f
-                                                val shadowOffsetY = size.height * 0.0f
-                                                drawCircle(
-                                                    brush = Brush.radialGradient(
-                                                        colors = listOf(
-                                                            Color.Black,
-                                                            Color.Black.copy(alpha = 0.2f)
-                                                        ),
-                                                        center = Offset(
-                                                            center.x,
-                                                            center.y + shadowOffsetY
-                                                        ),
-                                                        radius = shadowRadius
-                                                    ),
-                                                    radius = shadowRadius,
-                                                    center = Offset(
-                                                        center.x,
-                                                        center.y + shadowOffsetY
-                                                    )
-                                                )
-                                            }
+                                            .shadow(elevation = 8.dp, shape = CircleShape)
+                                            .border(4.dp, Color.White, CircleShape)
                                     ) {
                                         Text(
                                             "Buy",

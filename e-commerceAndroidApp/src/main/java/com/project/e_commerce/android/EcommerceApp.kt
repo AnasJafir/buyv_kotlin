@@ -7,7 +7,10 @@ import coil3.request.crossfade
 import coil3.util.DebugLogger
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
+import java.util.concurrent.TimeUnit
 import androidx.emoji2.bundled.BundledEmojiCompatConfig
 import androidx.emoji2.text.EmojiCompat
 import com.google.firebase.FirebaseApp
@@ -80,6 +83,23 @@ class EcommerceApp : Application() {
                         // 250 MB disk cache for images
                         .maxSizeBytes(250L * 1024 * 1024)
                         .build()
+                }
+                .components {
+                    // P3-A: Better redirect/timeout handling for CJ Dropshipping product images
+                    add(OkHttpNetworkFetcherFactory(callFactory = {
+                        OkHttpClient.Builder()
+                            .followRedirects(true)
+                            .followSslRedirects(true)
+                            .callTimeout(30, TimeUnit.SECONDS)
+                            .addInterceptor { chain ->
+                                chain.proceed(
+                                    chain.request().newBuilder()
+                                        .header("User-Agent", "Mozilla/5.0 (Android)")
+                                        .build()
+                                )
+                            }
+                            .build()
+                    }))
                 }
                 .build()
 
