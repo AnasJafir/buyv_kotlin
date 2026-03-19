@@ -39,6 +39,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun CommentsSheet(
     postId: String,
+    reel: com.project.e_commerce.android.presentation.ui.screens.reelsScreen.Reels? = null,
     onDismiss: () -> Unit,
     commentsViewModel: CommentsViewModel = koinViewModel()
 ) {
@@ -58,6 +59,7 @@ fun CommentsSheet(
 
     CommentsBottomSheet(
         postId = postId,
+        reel = reel,
         currentUserId = currentUserId,
         commentsUiState = commentsUiState,
         onDismiss = onDismiss,

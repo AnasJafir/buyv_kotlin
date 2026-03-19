@@ -464,14 +464,14 @@ fun VideoPlayer(
                 }
             }
 
-            if (showPlayButton && !isLoading) {
+            if (showPlayButton && !isLoading && !isPlayerPlaying) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = if (isPlayerPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = if (isPlayerPlaying) "Pause" else "Play",
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = "Play",
                         tint = Color.White.copy(alpha = 0.8f),
                         modifier = Modifier.size(64.dp)
                     )
@@ -480,3 +480,4 @@ fun VideoPlayer(
         }
     }
 }
+

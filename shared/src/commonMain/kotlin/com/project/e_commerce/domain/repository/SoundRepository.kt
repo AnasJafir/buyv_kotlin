@@ -26,4 +26,7 @@ interface SoundRepository {
 
     /** Increment usage count for a sound. */
     suspend fun incrementUsage(soundUid: String)
+
+    /** Extract audio from video for SOUND-003. */
+    suspend fun extractAudioFromVideo(videoUrl: String, title: String? = null): Sound
 }

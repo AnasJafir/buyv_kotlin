@@ -69,4 +69,18 @@ class SoundApiService(private val httpClient: HttpClient) {
     suspend fun incrementUsage(soundUid: String): SoundUsageResponseDto {
         return httpClient.post("$baseUrl/$soundUid/use").body()
     }
+
+    /**
+     * Extract audio from a video URL to create a new sound piece for reuse.
+     * SOUND-003
+     */
+    suspend fun extractAudioFromVideo(videoUrl: String, title: String? = null): SoundDto {
+        return httpClient.post("$baseUrl/extract") {
+            url {
+                parameters.append("video_url", videoUrl)
+                if (title != null) parameters.append("title", title)
+            }
+        }.body()
+    }
 }
+

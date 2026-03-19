@@ -73,6 +73,9 @@ class ReelsScreenViewModel(
     @Volatile
     private var needsRefresh = false
 
+    /** Job for the init/background load — cancelled when forceRefresh runs */
+    private var initLoadJob: kotlinx.coroutines.Job? = null
+
     /** Called from onPostCreated to signal that data is stale */
     fun markNeedsRefresh() {
         needsRefresh = true
@@ -81,7 +84,7 @@ class ReelsScreenViewModel(
     init {
         try {
             Log.d("ReelsScreenViewModel", "🚀 ReelsScreenViewModel initialized")
-            viewModelScope.launch {
+            initLoadJob = viewModelScope.launch {
                 try {
                     _isLoading.emit(true)
                     _errorMessage.emit(null)
@@ -90,6 +93,8 @@ class ReelsScreenViewModel(
 
                     loadReelsWithRetry()
 
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    Log.d("ReelsScreenViewModel", "Init load cancelled (forceRefresh took over)")
                 } catch (e: Exception) {
                     Log.e("ReelsScreenViewModel", "Error in init LaunchedEffect", e)
                     _errorMessage.emit("Failed to initialize: ${e.message}")
@@ -129,6 +134,11 @@ class ReelsScreenViewModel(
 
                 if (reels.isNotEmpty()) {
                     Log.d("ReelsScreenViewModel", "✅ Successfully loaded ${reels.size} reels")
+                    reels.forEachIndexed { idx, r ->
+                        val hasVideo = r.video != null && r.video.toString().startsWith("http")
+                        val imgCount = r.images?.size ?: 0
+                        Log.d("ReelsScreenViewModel", "  📺 [$idx] id=${r.id.take(8)}, hasVideo=$hasVideo, imgCount=$imgCount, name=${r.productName.take(30)}")
+                    }
                     _state.emit(reels)
                     _isLoading.emit(false)
                     _errorMessage.emit(null)
@@ -273,10 +283,14 @@ class ReelsScreenViewModel(
     }
     
     fun forceRefreshFromProductViewModel() {
+        // Cancel any in-flight init load to prevent stale data overwrite
+        initLoadJob?.cancel()
+        initLoadJob = null
         viewModelScope.launch {
             Log.d("ReelsScreenViewModel", "🔄 forceRefreshFromProductViewModel called (needsRefresh=$needsRefresh)")
             needsRefresh = false
-            productViewModel.refreshProductsSync()  // AWAIT completion (no race condition)
+            productViewModel.refreshProductsSync()  // AWAIT fresh backend data
+            Log.d("ReelsScreenViewModel", "🔄 Backend refresh done: ${productViewModel.allProducts.size} products, ${productViewModel.productReels.size} reels")
             loadReelsWithRetry()
             _scrollToTop.tryEmit(Unit)
         }
@@ -286,41 +300,16 @@ class ReelsScreenViewModel(
      * Refresh feed data WITHOUT scrolling to top.
      * Used when navigating to a specific reel (profile grid tap).
      */
-    fun refreshDataOnly(targetReelId: String? = null) {
+    fun refreshDataOnly() {
+        // Cancel any in-flight init load to prevent stale data overwrite
+        initLoadJob?.cancel()
+        initLoadJob = null
         viewModelScope.launch {
             Log.d("ReelsScreenViewModel", "🔄 refreshDataOnly called (no scrollToTop)")
-            productViewModel.refreshProductsSync()  // AWAIT completion (no race condition)
+            productViewModel.refreshProductsSync()  // AWAIT fresh backend data
+            Log.d("ReelsScreenViewModel", "🔄 Backend refresh done: ${productViewModel.allProducts.size} products, ${productViewModel.productReels.size} reels")
             loadReelsWithRetry()
             // NO _scrollToTop emission — caller will handle scrolling to the target
-            if (targetReelId != null) {
-                injectSpecificReelIfNotExists(targetReelId)
-            }
-        }
-    }
-
-    private suspend fun injectSpecificReelIfNotExists(targetReelId: String) {
-        val currentList = _state.value
-        if (currentList.any { it.id == targetReelId || it.postUid == targetReelId }) return
-        try {
-            val post = postRepository.getPostById(targetReelId)
-            val newReel = Reels(
-                id = post.id,
-                userId = post.userId,
-                userName = post.username.takeIf { it.isNotBlank() } ?: "User",
-                userImage = com.project.e_commerce.android.R.drawable.profile,
-                video = post.mediaUrl.takeIf { it.isNotBlank() && post.mediaType.name == "VIDEO" }?.let { android.net.Uri.parse(it) },
-                images = if (post.mediaType.name == "IMAGE") listOf(post.mediaUrl).mapNotNull { android.net.Uri.parse(it) } else emptyList(),
-                contentDescription = post.caption,
-                postUid = post.id,
-                soundUid = null,
-                comments = emptyList(),
-                love = LoveItem(number = post.likesCount, isLoved = post.isLiked)
-            )
-            val reelsWithStates = loadLikeStatesForReels(listOf(newReel))
-            val finalReel = reelsWithStates.firstOrNull() ?: newReel
-            _state.emit(listOf(finalReel) + _state.value)
-        } catch (e: Exception) {
-            Log.e("ReelsScreenViewModel", "Failed to inject specific reel", e)
         }
     }
 
@@ -847,5 +836,3 @@ class ReelsScreenViewModel(
     }
 
 }
-
-

@@ -25,18 +25,31 @@ class MainUiStateViewModel : ViewModel() {
         _currentReel.value = reel
     }
 
-    fun showAddToCartSheet(reel: Reels) { 
+        private val _isRatingsSheetVisible = MutableStateFlow(false)
+    val isRatingsSheetVisible: StateFlow<Boolean> = _isRatingsSheetVisible
+
+    fun showRatingsSheet(reel: Reels) {
         _selectedReelForCart.value = reel
-        _isAddToCartSheetVisible.value = true 
-    }
-    
-    fun hideAddToCartSheet() { 
-        _isAddToCartSheetVisible.value = false 
-        _selectedReelForCart.value = null
+        _isRatingsSheetVisible.value = true
+        _hideBottomBar.value = true
     }
 
-    fun setBottomSheetVisible(visible: Boolean) {
-        _isBottomSheetVisible.value = visible
+    fun hideRatingsSheet() {
+        _isRatingsSheetVisible.value = false
+        _hideBottomBar.value = false
+    }
+
+    fun showAddToCartSheet(reel: Reels) {
+        _selectedReelForCart.value = reel
+        _isAddToCartSheetVisible.value = true
+        _hideBottomBar.value = true
+    }
+
+    fun hideAddToCartSheet() {
+        _isAddToCartSheetVisible.value = false
+        _selectedReelForCart.value = null
+        _hideBottomBar.value = false
+        _isBottomSheetVisible.value = false
     }
 
     fun hideBottomBar() {

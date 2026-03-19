@@ -551,7 +551,8 @@ val viewModelModule = module {
             com.project.e_commerce.android.presentation.viewModel.addContent.AddNewContentViewModel(
                 currentUserProvider = get(),
                 createPostUseCase = get(),
-                marketplaceApi = get()
+                marketplaceApi = get(),
+                soundRepository = get()
             )
         }
 

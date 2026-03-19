@@ -373,7 +373,7 @@ fun UserReelsGrid(reels: List<com.project.e_commerce.android.domain.model.UserPo
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        items(reels, key = { it.id }) { reel ->
+        items(reels) { reel ->
             Box(
                 modifier = Modifier
                     .background(Color(0xFFF8F8F8))
@@ -494,7 +494,7 @@ fun UserProductsGrid(products: List<com.project.e_commerce.android.domain.model.
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        items(products, key = { it.id }) { product ->
+        items(products) { product ->
             Box(
                 modifier = Modifier
                     .background(Color(0xFFF8F8F8))

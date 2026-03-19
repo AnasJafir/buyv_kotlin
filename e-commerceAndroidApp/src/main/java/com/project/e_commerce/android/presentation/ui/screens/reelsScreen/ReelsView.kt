@@ -103,7 +103,6 @@ fun ReelsView(
     // --- Bottom sheet state ---
     var showCommentsSheet by remember { mutableStateOf(false) }
     var selectedPostId by remember { mutableStateOf<String?>(null) }
-    var showBuySheet by remember { mutableStateOf(false) }
     var currentReel by remember { mutableStateOf<Reels?>(null) }
 
     // --- Tab state ---
@@ -114,8 +113,7 @@ fun ReelsView(
     val followingViewModel: FollowingViewModel = koinViewModel()
 
     // Back handler for sheets
-    BackHandler(enabled = showBuySheet || showCommentsSheet) {
-        showBuySheet = false
+    BackHandler(enabled = showCommentsSheet) {
         showCommentsSheet = false
         mainUiStateViewModel?.showBottomBar()
     }
@@ -208,7 +206,7 @@ fun ReelsView(
                     reelsViewModel = viewModel,
                     cartViewModel = cartViewModel,
                     onShowSheet = { sheetType, reel ->
-                        showBuySheet = true
+                        onShowSheet(sheetType, reel)
                         currentReel = reel
                     },
                     onShareReel = { reel -> shareReel(reel, shareLauncher) },
@@ -236,41 +234,13 @@ fun ReelsView(
                     },
                     onOpenBuySheet = { reel ->
                         if (!isLoggedIn) showLoginPrompt.value = true
-                        showBuySheet = true
+                        onShowSheet(SheetType.AddToCart, reel)
                         currentReel = reel
                     },
                     onShareReel = { reel -> shareReel(reel, shareLauncher) }
                 )
             }
             else -> { /* Explore navigates away */ }
-        }
-
-        // --- Buy bottom sheet overlay ---
-        if (showBuySheet && currentReel != null) {
-            mainUiStateViewModel?.hideBottomBar()
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.35f))
-                    .clickable {
-                        showBuySheet = false
-                        mainUiStateViewModel?.showBottomBar()
-                    }
-            )
-            BuyBottomSheet(
-                reel = currentReel,
-                cartViewModel = cartViewModel,
-                navController = navController,
-                onClose = {
-                    showBuySheet = false
-                    mainUiStateViewModel?.showBottomBar()
-                },
-                productPrice = currentReel?.marketplaceProductPrice
-                    ?: currentReel?.productPrice?.toDoubleOrNull() ?: 0.0,
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
-        } else {
-            mainUiStateViewModel?.showBottomBar()
         }
 
         // --- Login prompt ---
@@ -302,6 +272,7 @@ fun ReelsView(
             )
             CommentsSheet(
                 postId = selectedPostId!!,
+                reel = currentReel,
                 onDismiss = {
                     showCommentsSheet = false
                     selectedPostId = null
@@ -329,7 +300,7 @@ fun ReelsView(
 }
 
 /** Types of bottom sheet overlays available in the reels screen. */
-enum class SheetType { AddToCart, Comments }
+enum class SheetType { AddToCart, Comments, Ratings }
 
 // --- Share helper ---
 private fun shareReel(

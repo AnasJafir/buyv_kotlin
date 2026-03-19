@@ -104,6 +104,26 @@ fun AddNewContentScreen(
             Spacer(Modifier.height(12.dp))
         }
 
+        var isVideoMode by remember { mutableStateOf(true) }
+
+        // UPLOAD-003: Zones séparées
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                onClick = { isVideoMode = true },
+                colors = ButtonDefaults.buttonColors(backgroundColor = if (isVideoMode) Color(0xFFFF6F00) else Color.LightGray),
+                modifier = Modifier.weight(1f).padding(end = 8.dp)
+            ) { Text("Reel Video", color = Color.White) }
+            Button(
+                onClick = { isVideoMode = false },
+                colors = ButtonDefaults.buttonColors(backgroundColor = if (!isVideoMode) Color(0xFFFF6F00) else Color.LightGray),
+                modifier = Modifier.weight(1f).padding(start = 8.dp)
+            ) { Text("Photos", color = Color.White) }
+        }
+
+        if (isVideoMode) {
         // ─── Upload Reel ───
         Text("🎬 Upload Product Reel", fontWeight = FontWeight.SemiBold, color = Color(0xFFFF6F00))
         Spacer(Modifier.height(8.dp))
@@ -125,6 +145,7 @@ fun AddNewContentScreen(
                 onClick = { reelLauncher.launch("video/*") }
             )
         }
+        } else {
 
         Spacer(Modifier.height(16.dp))
 
@@ -154,6 +175,7 @@ fun AddNewContentScreen(
                 note = "Format: .jpeg, .png & Max file size: 25 MB",
                 onClick = { imageLauncher.launch("image/*") }
             )
+        }
         }
 
         Spacer(Modifier.height(16.dp))

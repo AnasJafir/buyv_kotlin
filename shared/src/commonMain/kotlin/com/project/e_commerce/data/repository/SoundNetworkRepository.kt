@@ -50,6 +50,10 @@ class SoundNetworkRepository(
         soundApiService.incrementUsage(soundUid)
     }
 
+    override suspend fun extractAudioFromVideo(videoUrl: String, title: String?): Sound {
+        return soundApiService.extractAudioFromVideo(videoUrl, title).toDomain()
+    }
+
     private fun SoundDto.toDomain(): Sound {
         return Sound(
             id = id,

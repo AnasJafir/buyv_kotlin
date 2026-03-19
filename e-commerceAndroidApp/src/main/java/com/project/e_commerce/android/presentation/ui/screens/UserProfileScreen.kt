@@ -79,7 +79,7 @@ fun UserProfileScreen(
     // Determine if this is the current user's profile or another user's profile
     val isOwnProfile = targetUserId == currentUserId
 
-    val getUserProfileUseCase: GetUserProfileUseCase = koinViewModel()
+    val getUserProfileUseCase: GetUserProfileUseCase = org.koin.compose.koinInject()
     val otherUserProfileViewModel: OtherUserProfileViewModel = koinViewModel()
     val scope = rememberCoroutineScope()
     
@@ -481,4 +481,5 @@ fun SimpleProductGrid(navController: NavHostController) {
         }
     }
 }
+
 

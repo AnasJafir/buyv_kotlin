@@ -5,7 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -46,6 +46,7 @@ import com.project.e_commerce.android.presentation.ui.navigation.AppBottomBar
 import com.project.e_commerce.android.presentation.ui.navigation.MyNavHost
 import com.project.e_commerce.android.presentation.ui.navigation.Screens
 import com.project.e_commerce.android.presentation.ui.screens.reelsScreen.BuyBottomSheet
+import com.project.e_commerce.android.presentation.ui.screens.reelsScreen.components.RatingsBottomSheet
 import com.project.e_commerce.android.presentation.viewModel.CartViewModel
 import com.project.e_commerce.android.presentation.viewModel.MainUiStateViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -66,7 +67,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.remember
 import androidx.compose.ui.input.pointer.pointerInput
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     private val mainUiStateViewModel: MainUiStateViewModel by viewModels()
     private val activityScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -289,6 +290,13 @@ class MainActivity : ComponentActivity() {
                                                 launchSingleTop = true
                                                 restoreState = true
                                             }
+                                        },
+                                        onAddClick = {
+                                            if (isAuthenticated) {
+                                                navController.navigate(Screens.ProfileScreen.AddNewContentScreen.route)
+                                            } else {
+                                                navController.navigate(Screens.LoginScreen.route)
+                                            }
                                         }
                                     )
                                 }
@@ -352,6 +360,24 @@ class MainActivity : ComponentActivity() {
                             BackHandler(enabled = isAddToCartSheetVisible) {
                                 mainUiStateViewModel.hideAddToCartSheet()
                             }
+                                                        // RatingsBottomSheet
+                            val isRatingsSheetVisible by mainUiStateViewModel.isRatingsSheetVisible.collectAsState()
+                            
+                            BackHandler(enabled = isRatingsSheetVisible) {
+                                mainUiStateViewModel.hideRatingsSheet()
+                            }
+                            
+                            if (isRatingsSheetVisible && selectedReelForCart != null) {
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)).clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { mainUiStateViewModel.hideRatingsSheet() })
+                                    RatingsBottomSheet(
+                                        reel = selectedReelForCart!!,
+                                        onDismiss = { mainUiStateViewModel.hideRatingsSheet() },
+                                        modifier = Modifier.align(Alignment.BottomCenter)
+                                    )
+                                }
+                            }
+                            
                             // BuyBottomSheet
                             if (isAddToCartSheetVisible && selectedReelForCart != null) {
                                 // Ensure cart is initialized before showing BuyBottomSheet
@@ -382,6 +408,7 @@ class MainActivity : ComponentActivity() {
                                         productImage = selectedReelForCart!!.productImage,
                                         reel = selectedReelForCart,
                                         cartViewModel = cartViewModel,
+                                        onShowRatings = { mainUiStateViewModel.showRatingsSheet(selectedReelForCart!!) },
                                         navController = navController,
                                         modifier = Modifier
                                             .align(Alignment.BottomCenter)

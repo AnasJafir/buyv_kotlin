@@ -9,11 +9,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,10 +32,12 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
+import com.project.e_commerce.android.presentation.ui.screens.reelsScreen.Reels
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CommentsBottomSheet(
     postId: String,
+    reel: Reels? = null,
     currentUserId: String,
     commentsUiState: CommentsUiState,
     onDismiss: () -> Unit,
@@ -45,6 +49,7 @@ fun CommentsBottomSheet(
 ) {
     var commentText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
+    var selectedTab by remember { mutableStateOf(0) }
 
     // Load comments when sheet opens
     LaunchedEffect(postId) {
@@ -71,19 +76,37 @@ fun CommentsBottomSheet(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Comments",
-                style = MaterialTheme.typography.h6,
-                fontWeight = FontWeight.Bold
-            )
+            TabRow(
+                selectedTabIndex = selectedTab,
+                modifier = Modifier.weight(1f),
+                backgroundColor = Color.Transparent,
+                contentColor = MaterialTheme.colors.primary,
+                indicator = { tabPositions ->
+                    TabRowDefaults.Indicator(
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab])
+                    )
+                },
+                divider = {}
+            ) {
+                Tab(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    text = { Text("Comments", fontWeight = FontWeight.Bold) }
+                )
+                Tab(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
+                    text = { Text("Ratings", fontWeight = FontWeight.Bold) }
+                )
+            }
             IconButton(onClick = onDismiss) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Close comments"
+                    contentDescription = "Close"
                 )
             }
         }
@@ -117,21 +140,142 @@ fun CommentsBottomSheet(
             }
         }
 
-        // Comments list
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        ) {
-            when {
-                commentsUiState.isLoading && commentsUiState.comments.isEmpty() -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .align(Alignment.Center)
-                    )
+        if (selectedTab == 0) {
+            // Comments list
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                when {
+                    commentsUiState.isLoading && commentsUiState.comments.isEmpty() -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .align(Alignment.Center)
+                        )
+                    }
+                    commentsUiState.comments.isEmpty() -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "No comments yet",
+                                style = MaterialTheme.typography.body1,
+                                color = Color.Gray
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Be the first to comment!",
+                                style = MaterialTheme.typography.body2,
+                                color = Color.Gray
+                            )
+                        }
+                    }
+                    else -> {
+                        LazyColumn(
+                            state = listState,
+                            contentPadding = PaddingValues(vertical = 8.dp)
+                        ) {
+                            items(
+                                items = commentsUiState.comments,
+                                key = { it.id }
+                            ) { comment ->
+                                CommentItem(
+                                    comment = comment,
+                                    currentUserId = currentUserId,
+                                    onDeleteComment = { commentId ->
+                                        onDeleteComment(postId, commentId, currentUserId)
+                                    }
+                                )
+                            }
+
+                            // Loading more indicator
+                            if (commentsUiState.isLoadingMore) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-                commentsUiState.comments.isEmpty() -> {
+            }
+
+            Divider()
+
+            // Input field
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colors.surface)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = commentText,
+                    onValueChange = { commentText = it },
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = 48.dp, max = 120.dp),
+                    placeholder = { Text("Add a comment...") },
+                    shape = RoundedCornerShape(24.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        backgroundColor = MaterialTheme.colors.surface,
+                        focusedBorderColor = MaterialTheme.colors.primary,
+                        unfocusedBorderColor = Color.Gray.copy(alpha = 0.3f)
+                    ),
+                    enabled = !commentsUiState.isAddingComment,
+                    maxLines = 4
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                IconButton(
+                    onClick = {
+                        if (commentText.isNotBlank()) {
+                            onAddComment(postId, commentText.trim(), currentUserId)
+                            commentText = ""
+                        }
+                    },
+                    enabled = commentText.isNotBlank() && !commentsUiState.isAddingComment
+                ) {
+                    if (commentsUiState.isAddingComment) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Send,
+                            contentDescription = "Send comment",
+                            tint = if (commentText.isNotBlank())
+                                MaterialTheme.colors.primary
+                            else
+                                Color.Gray
+                        )
+                    }
+                }
+            }
+        } else {
+            // Ratings tab
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                val ratingsList = reel?.ratings ?: emptyList()
+                if (ratingsList.isEmpty()) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -139,107 +283,27 @@ fun CommentsBottomSheet(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Text(
-                            text = "No comments yet",
-                            style = MaterialTheme.typography.body1,
-                            color = Color.Gray
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = "No ratings",
+                            modifier = Modifier.size(48.dp),
+                            tint = Color.LightGray
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Be the first to comment!",
-                            style = MaterialTheme.typography.body2,
+                            text = "No ratings yet",
+                            style = MaterialTheme.typography.body1,
                             color = Color.Gray
                         )
                     }
-                }
-                else -> {
+                } else {
                     LazyColumn(
-                        state = listState,
                         contentPadding = PaddingValues(vertical = 8.dp)
                     ) {
-                        items(
-                            items = commentsUiState.comments,
-                            key = { it.id }
-                        ) { comment ->
-                            CommentItem(
-                                comment = comment,
-                                currentUserId = currentUserId,
-                                onDeleteComment = { commentId ->
-                                    onDeleteComment(postId, commentId, currentUserId)
-                                }
-                            )
-                        }
-
-                        // Loading more indicator
-                        if (commentsUiState.isLoadingMore) {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                                }
-                            }
+                        items(items = ratingsList) { rating ->
+                            com.project.e_commerce.android.presentation.ui.screens.reelsScreen.components.ModernRatingItem(rating)
                         }
                     }
-                }
-            }
-        }
-
-        Divider()
-
-        // Input field
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colors.surface)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            OutlinedTextField(
-                value = commentText,
-                onValueChange = { commentText = it },
-                modifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = 48.dp, max = 120.dp),
-                placeholder = { Text("Add a comment...") },
-                shape = RoundedCornerShape(24.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    backgroundColor = MaterialTheme.colors.surface,
-                    focusedBorderColor = MaterialTheme.colors.primary,
-                    unfocusedBorderColor = Color.Gray.copy(alpha = 0.3f)
-                ),
-                enabled = !commentsUiState.isAddingComment,
-                maxLines = 4
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            IconButton(
-                onClick = {
-                    if (commentText.isNotBlank()) {
-                        onAddComment(postId, commentText.trim(), currentUserId)
-                        commentText = ""
-                    }
-                },
-                enabled = commentText.isNotBlank() && !commentsUiState.isAddingComment
-            ) {
-                if (commentsUiState.isAddingComment) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Send,
-                        contentDescription = "Send comment",
-                        tint = if (commentText.isNotBlank())
-                            MaterialTheme.colors.primary
-                        else
-                            Color.Gray
-                    )
                 }
             }
         }

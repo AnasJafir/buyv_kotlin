@@ -196,20 +196,24 @@ fun UserInfo(
         )
 
         // SET-003: Follow button hides completely after following (does not gray out)
-        // Only show when NOT owner, has valid userId, and NOT already following
-        if (!isOwner && reel.userId.isNotBlank() && !isFollowing) {
+        // Show when NOT owner, changes to gray/disabled when followed
+        if (!isOwner && reel.userId.isNotBlank()) {
             Box(
                 modifier = Modifier
                     .shadow(elevation = 6.dp, shape = RoundedCornerShape(8.dp), clip = false)
                     .background(
-                        brush = Brush.horizontalGradient(listOf(Color(0xFFf8a714), Color(0xFFed380a))),
+                        brush = if (isFollowing) {
+                            androidx.compose.ui.graphics.SolidColor(Color.Gray)
+                        } else {
+                            Brush.horizontalGradient(listOf(Color(0xFFf8a714), Color(0xFFed380a)))
+                        },
                         shape = RoundedCornerShape(8.dp)
                     )
-                    .clickable {
+                    .clickable(enabled = !isFollowing) {
                         if (!isActuallyLoggedIn) {
                             showLoginPrompt.value = true
                         } else {
-                            isFollowingLocal = !isFollowingLocal
+                            isFollowingLocal = true
 
                             currentUserId?.let { userId ->
                                 coroutineScope.launch {
@@ -220,7 +224,7 @@ fun UserInfo(
                                         UserInfoCache.clearUserCache(reel.userId)
                                     } catch (e: Exception) {
                                         Log.e("UserInfo", "❌ Follow/unfollow operation failed: ${e.message}")
-                                        isFollowingLocal = !isFollowingLocal
+                                        isFollowingLocal = false
                                     }
                                 }
                             }
@@ -231,9 +235,9 @@ fun UserInfo(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Follow +",
+                    text = if (isFollowing) "Following" else "Follow +",
                     color = Color.White,
-                    fontSize = 17.sp,
+                    fontSize = if (isFollowing) 14.sp else 17.sp,
                     fontWeight = FontWeight.Bold
                 )
             }

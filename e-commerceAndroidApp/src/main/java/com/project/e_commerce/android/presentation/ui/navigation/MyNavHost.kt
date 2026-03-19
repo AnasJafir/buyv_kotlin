@@ -155,6 +155,11 @@ fun MyNavHost(
                             Log.d("MyNavHost", "🎬 Comments sheet requested")
                             // Handle comments sheet if needed
                         }
+                        SheetType.Ratings -> {
+                            if (reel != null) {
+                                mainUiStateViewModel.showRatingsSheet(reel)
+                            }
+                        }
                     }
                 },
                 mainUiStateViewModel = mainUiStateViewModel
@@ -198,6 +203,11 @@ fun MyNavHost(
                         }
                         SheetType.Comments -> {
                             // Handle comments sheet if needed
+                        }
+                        SheetType.Ratings -> {
+                            if (reel != null) {
+                                mainUiStateViewModel.showRatingsSheet(reel)
+                            }
                         }
                     }
                 },
@@ -528,3 +538,4 @@ fun MyNavHost(
 
     }
 }
+

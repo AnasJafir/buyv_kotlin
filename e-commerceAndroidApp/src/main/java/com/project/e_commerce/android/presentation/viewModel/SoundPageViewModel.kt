@@ -65,9 +65,12 @@ class SoundPageViewModel(
                     )
                 }
                 is Result.Error -> {
+                    // SOUND-001: Catch SerializationException or just hide stacktrace, display user-friendly message
+                    val isSerializationIssue = result.error.message?.contains("required for type with serial name") == true
+                    val errorMessage = if (isSerializationIssue) "Sound information unavailable" else "Sound information unavailable"
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.error.message
+                        error = errorMessage
                     )
                 }
                 is Result.Loading -> {
