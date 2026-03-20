@@ -18,6 +18,7 @@ import '../screens/product/all_products_screen.dart';
 import '../screens/cart/cart_screen.dart';
 import '../screens/cart/payment_screen.dart';
 import '../screens/order/orders_history_screen.dart';
+import '../screens/order/order_success_screen.dart';
 import '../screens/order/track_order_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/profile/edit_profile_screen.dart';
@@ -77,6 +78,7 @@ abstract class AppRoutes {
   static const allProducts = '/products/all';
   static const cart = '/cart';
   static const payment = '/cart/payment';
+  static const orderSuccess = '/cart/success';
   static const profile = '/profile';
   static const editProfile = '/profile/edit';
   static const ordersHistory = '/profile/orders';
@@ -213,6 +215,19 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (_, __) => const CartScreen(),
             routes: [
               GoRoute(path: 'payment', builder: (_, __) => const PaymentScreen()),
+              GoRoute(
+                path: 'success',
+                builder: (context, state) {
+                  final orderId = int.tryParse(state.uri.queryParameters['orderId'] ?? '');
+                  final orderNumber = state.uri.queryParameters['orderNumber'] ?? '';
+                  final total = double.tryParse(state.uri.queryParameters['total'] ?? '') ?? 0.0;
+                  return OrderSuccessScreen(
+                    orderId: orderId,
+                    orderNumber: orderNumber,
+                    total: total,
+                  );
+                },
+              ),
             ],
           ),
           // Profile

@@ -233,7 +233,15 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       messenger.showSnackBar(
         SnackBar(content: Text('Commande ${order.orderNumber} creee avec succes.')),
       );
-      context.go(AppRoutes.ordersHistory);
+      final orderQuery = Uri(
+        path: AppRoutes.orderSuccess,
+        queryParameters: <String, String>{
+          'orderId': order.id.toString(),
+          'orderNumber': order.orderNumber,
+          'total': order.total.toStringAsFixed(2),
+        },
+      );
+      context.go(orderQuery.toString());
     } on stripe.StripeException catch (error) {
       messenger.showSnackBar(
         SnackBar(content: Text('Paiement annule ou invalide: ${error.error.localizedMessage ?? error.error.message ?? 'Stripe error'}')),
