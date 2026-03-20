@@ -1,14 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../providers/auth_provider.dart';
 import '../../router/app_router.dart';
+import '../../widgets/common/error_snackbar.dart';
 
-class CameraScreen extends StatelessWidget {
+class CameraScreen extends ConsumerWidget {
   const CameraScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAuthenticated = ref.watch(isAuthenticatedProvider);
+
+    Future<bool> ensureAuthenticated() async {
+      if (isAuthenticated) {
+        return true;
+      }
+      await showAuthRequiredSheet(context);
+      return false;
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('Creer du contenu')),
       body: Padding(
@@ -22,7 +35,15 @@ class CameraScreen extends StatelessWidget {
                 title: const Text('Ajouter via URL media'),
                 subtitle: const Text('Publier reel, photo ou produit a partir d une URL.'),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.push(AppRoutes.addContent),
+                onTap: () async {
+                  if (!await ensureAuthenticated()) {
+                    return;
+                  }
+                  if (!context.mounted) {
+                    return;
+                  }
+                  context.push(AppRoutes.addContent);
+                },
               ),
             ),
             const SizedBox(height: 10),
@@ -33,6 +54,9 @@ class CameraScreen extends StatelessWidget {
                 subtitle: const Text('Prepare un upload image depuis la galerie.'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () async {
+                  if (!await ensureAuthenticated()) {
+                    return;
+                  }
                   final picker = ImagePicker();
                   final file = await picker.pickImage(source: ImageSource.gallery);
                   if (!context.mounted) {
@@ -56,6 +80,9 @@ class CameraScreen extends StatelessWidget {
                 subtitle: const Text('Prepare un upload reel depuis la galerie.'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () async {
+                  if (!await ensureAuthenticated()) {
+                    return;
+                  }
                   final picker = ImagePicker();
                   final file = await picker.pickVideo(source: ImageSource.gallery);
                   if (!context.mounted) {

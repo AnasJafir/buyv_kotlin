@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../providers/auth_provider.dart';
 import '../../router/app_router.dart';
+import '../../widgets/common/error_snackbar.dart';
 
 /// Bottom navigation scaffold — wraps all main tabs.
 /// Matches KMP's BottomNavigationBar with Reels, Products, [Buy FAB], Cart, Profile.
@@ -28,12 +31,25 @@ class MainScaffold extends StatelessWidget {
   }
 }
 
-class _BuyVBottomNav extends StatelessWidget {
+class _BuyVBottomNav extends ConsumerWidget {
   final int currentIndex;
   const _BuyVBottomNav({required this.currentIndex});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAuthenticated = ref.watch(isAuthenticatedProvider);
+
+    Future<void> openAddContent() async {
+      if (!isAuthenticated) {
+        await showAuthRequiredSheet(context);
+        return;
+      }
+      if (!context.mounted) {
+        return;
+      }
+      context.push(AppRoutes.addContent);
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -56,7 +72,7 @@ class _BuyVBottomNav extends StatelessWidget {
               _NavItem(index: 1, current: currentIndex, icon: Icons.grid_view_outlined, label: 'Products',
                   onTap: () => context.go(AppRoutes.products)),
               // Central Buy FAB — fixes UI-001 (no border) and UPLOAD-001 (visible CTA)
-              _BuyFab(onTap: () => context.push(AppRoutes.addContent)),
+                _BuyFab(onTap: openAddContent),
               _NavItem(index: 2, current: currentIndex, icon: Icons.shopping_bag_outlined, label: 'Cart',
                   onTap: () => context.go(AppRoutes.cart)),
               _NavItem(index: 3, current: currentIndex, icon: Icons.person_outline, label: 'Profile',
