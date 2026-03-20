@@ -1,0 +1,105 @@
+name: buyv
+description: BuyV - Social E-Commerce with TikTok-style Reels (Flutter)
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # ── State Management ──────────────────────────────────
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # ── Navigation ────────────────────────────────────────
+  go_router: ^14.6.3
+
+  # ── Dependency Injection ──────────────────────────────
+  get_it: ^8.0.3
+  injectable: ^2.5.0
+
+  # ── Networking ────────────────────────────────────────
+  dio: ^5.8.0+1
+  pretty_dio_logger: ^1.4.0
+
+  # ── Serialization ────────────────────────────────────
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # ── Secure Storage ───────────────────────────────────
+  flutter_secure_storage: ^9.2.4
+
+  # ── Local Cache (Offline-first) ───────────────────────
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # ── Image Loading ─────────────────────────────────────
+  cached_network_image: ^3.4.1
+
+  # ── Video Player (Reels) ─────────────────────────────
+  video_player: ^2.9.2
+  visibility_detector: ^0.4.0+2
+
+  # ── Animations ───────────────────────────────────────
+  lottie: ^3.3.1
+
+  # ── Firebase ─────────────────────────────────────────
+  firebase_core: ^3.13.0
+  firebase_auth: ^5.5.2
+  firebase_messaging: ^15.2.5
+  google_sign_in: ^6.2.2
+  flutter_facebook_auth: ^7.1.1
+
+  # ── Payments ─────────────────────────────────────────
+  flutter_stripe: ^11.3.0
+
+  # ── Media Upload ─────────────────────────────────────
+  image_picker: ^1.1.2
+  file_picker: ^8.1.7
+
+  # ── Camera ───────────────────────────────────────────
+  camera: ^0.11.1
+
+  # ── Infinite Scroll ───────────────────────────────────
+  infinite_scroll_pagination: ^4.1.0
+
+  # ── UI Utilities ─────────────────────────────────────
+  shimmer: ^3.0.0
+
+  url_launcher: ^6.3.1
+  share_plus: ^10.1.4
+  intl: ^0.20.0
+  timeago: ^3.7.0
+  dots_indicator: ^3.0.0
+  flutter_rating_bar: ^4.0.1
+
+  # ── Icons & Fonts ────────────────────────────────────
+  google_fonts: ^6.2.1
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+  # ── Code Generation ──────────────────────────────────
+  build_runner: ^2.4.15
+  freezed: ^2.5.7
+  json_serializable: ^6.9.2
+  injectable_generator: ^2.6.2
+  riverpod_generator: any
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/images/
+    - assets/animations/
+    - assets/icons/
