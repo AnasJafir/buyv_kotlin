@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -981,6 +983,9 @@ class _VideoSurface extends StatefulWidget {
 
 class _VideoSurfaceState extends State<_VideoSurface> {
 	VideoPlayerController? _controller;
+	Timer? _overlayTimer;
+	bool _showCenterIcon = false;
+	IconData _centerIcon = Icons.play_arrow_rounded;
 
 	@override
 	void initState() {
@@ -1000,14 +1005,23 @@ class _VideoSurfaceState extends State<_VideoSurface> {
 		if (_controller != null) {
 			if (widget.isActive) {
 				_controller!.play();
+				_overlayTimer?.cancel();
+				if (mounted) {
+					setState(() => _showCenterIcon = false);
+				}
 			} else {
 				_controller!.pause();
+				_overlayTimer?.cancel();
+				if (mounted) {
+					setState(() => _showCenterIcon = false);
+				}
 			}
 		}
 	}
 
 	@override
 	void dispose() {
+		_overlayTimer?.cancel();
 		_disposeController();
 		super.dispose();
 	}
@@ -1015,29 +1029,97 @@ class _VideoSurfaceState extends State<_VideoSurface> {
 	@override
 	Widget build(BuildContext context) {
 		final videoUrl = widget.post.videoUrl;
+		Widget videoChild;
 		if (videoUrl == null || videoUrl.isEmpty || _controller == null) {
-			return _buildImageFallback();
+			videoChild = _buildImageFallback();
+		} else {
+			final controller = _controller!;
+			if (!controller.value.isInitialized) {
+				videoChild = Stack(
+					fit: StackFit.expand,
+					children: <Widget>[
+						_buildImageFallback(),
+						const Center(child: CircularProgressIndicator()),
+					],
+				);
+			} else {
+				videoChild = FittedBox(
+					fit: BoxFit.cover,
+					child: SizedBox(
+						width: controller.value.size.width,
+						height: controller.value.size.height,
+						child: VideoPlayer(controller),
+					),
+				);
+			}
 		}
 
-		final controller = _controller!;
-		if (!controller.value.isInitialized) {
-			return Stack(
+		return GestureDetector(
+			onTap: _togglePlayPause,
+			behavior: HitTestBehavior.opaque,
+			child: Stack(
 				fit: StackFit.expand,
 				children: <Widget>[
-					_buildImageFallback(),
-					const Center(child: CircularProgressIndicator()),
+					videoChild,
+					IgnorePointer(
+						child: Center(
+							child: AnimatedOpacity(
+								opacity: _showCenterIcon ? 1 : 0,
+								duration: const Duration(milliseconds: 180),
+								child: DecoratedBox(
+									decoration: BoxDecoration(
+										color: Colors.black.withValues(alpha: 0.45),
+										shape: BoxShape.circle,
+									),
+									child: Padding(
+										padding: const EdgeInsets.all(14),
+										child: Icon(_centerIcon, color: Colors.white, size: 34),
+									),
+								),
+							),
+						),
+					),
 				],
-			);
-		}
-
-		return FittedBox(
-			fit: BoxFit.cover,
-			child: SizedBox(
-				width: controller.value.size.width,
-				height: controller.value.size.height,
-				child: VideoPlayer(controller),
 			),
 		);
+	}
+
+	Future<void> _togglePlayPause() async {
+		final controller = _controller;
+		if (controller == null || !controller.value.isInitialized || !widget.isActive) {
+			return;
+		}
+
+		_overlayTimer?.cancel();
+
+		if (controller.value.isPlaying) {
+			await controller.pause();
+			if (!mounted) {
+				return;
+			}
+			setState(() {
+				_centerIcon = Icons.play_arrow_rounded;
+				_showCenterIcon = true;
+			});
+			return;
+		}
+
+		await controller.play();
+		if (!mounted) {
+			return;
+		}
+
+		setState(() {
+			_centerIcon = Icons.pause_rounded;
+			_showCenterIcon = true;
+		});
+
+		_overlayTimer = Timer(const Duration(milliseconds: 900), () {
+			if (!mounted) {
+				return;
+			}
+			setState(() => _showCenterIcon = false);
+		});
 	}
 
 	Widget _buildImageFallback() {
@@ -1076,8 +1158,16 @@ class _VideoSurfaceState extends State<_VideoSurface> {
 			_controller = preloaded;
 			if (widget.isActive) {
 				await preloaded.play();
+				_overlayTimer?.cancel();
+				if (mounted) {
+					setState(() => _showCenterIcon = false);
+				}
 			} else {
 				await preloaded.pause();
+				_overlayTimer?.cancel();
+				if (mounted) {
+					setState(() => _showCenterIcon = false);
+				}
 			}
 			if (mounted) {
 				setState(() {});
@@ -1093,6 +1183,10 @@ class _VideoSurfaceState extends State<_VideoSurface> {
 			await controller.setLooping(true);
 			if (widget.isActive && mounted) {
 				await controller.play();
+				_overlayTimer?.cancel();
+				setState(() => _showCenterIcon = false);
+			} else if (mounted) {
+				setState(() => _showCenterIcon = false);
 			}
 			if (mounted) {
 				setState(() {});
@@ -1106,6 +1200,7 @@ class _VideoSurfaceState extends State<_VideoSurface> {
 	}
 
 	void _disposeController() {
+		_overlayTimer?.cancel();
 		final controller = _controller;
 		_controller = null;
 		controller?.dispose();
