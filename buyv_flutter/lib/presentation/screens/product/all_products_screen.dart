@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'product_list_screen.dart';
+
 class AllProductsScreen extends StatelessWidget {
   const AllProductsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('AllProductsScreen')),
-      body: const Center(child: Text('Coming Soon — Work in Progress')),
-    );
+    return const ProductListScreen();
   }
 }
 

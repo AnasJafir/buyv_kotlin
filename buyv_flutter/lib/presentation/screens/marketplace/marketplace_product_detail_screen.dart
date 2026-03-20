@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../product/product_detail_screen.dart';
+
 class MarketplaceProductDetailScreen extends StatelessWidget {
   final String productId;
   const MarketplaceProductDetailScreen({super.key, required this.productId});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Marketplace Product')),
-      body: Center(child: Text('Product #$productId — Coming Soon')),
-    );
+    return ProductDetailScreen(productId: productId);
   }
 }
