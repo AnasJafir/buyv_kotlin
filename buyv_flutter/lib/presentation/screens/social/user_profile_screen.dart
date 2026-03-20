@@ -145,12 +145,40 @@ class UserProfileScreen extends ConsumerWidget {
                 Row(
                   children: <Widget>[
                     Expanded(
-                      child: FilledButton.icon(
-                        onPressed: socialAction.isLoading
-                            ? null
-                            : () => handleFollowToggle(isFollowing),
-                        icon: Icon(isFollowing ? Icons.person_remove : Icons.person_add),
-                        label: Text(isFollowing ? 'Se desabonner' : 'Suivre'),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 180),
+                        child: isFollowing
+                            ? OutlinedButton.icon(
+                                key: const ValueKey<String>('following'),
+                                onPressed: socialAction.isLoading
+                                    ? null
+                                    : () => handleFollowToggle(true),
+                                icon: socialAction.isLoading
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      )
+                                    : const Icon(Icons.check_circle_outline),
+                                label: const Text('Following'),
+                              )
+                            : FilledButton.icon(
+                                key: const ValueKey<String>('follow'),
+                                onPressed: socialAction.isLoading
+                                    ? null
+                                    : () => handleFollowToggle(false),
+                                icon: socialAction.isLoading
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Icon(Icons.person_add),
+                                label: const Text('Follow'),
+                              ),
                       ),
                     ),
                     const SizedBox(width: 10),
