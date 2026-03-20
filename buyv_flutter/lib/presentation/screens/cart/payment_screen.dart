@@ -45,6 +45,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     final total = ref.watch(cartTotalProvider);
     final checkoutState = ref.watch(checkoutProvider);
     final savedAddress = ref.watch(shippingAddressProvider);
+    final mockPaymentsAsync = ref.watch(paymentMockStatusProvider);
+    final mockPaymentsEnabled = mockPaymentsAsync.valueOrNull ?? false;
     final isLoading = checkoutState.isLoading || _isProcessing;
 
     if (!_didPrefill && savedAddress != null) {
@@ -152,7 +154,18 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text('Mode test: paiement simule via payment intent backend.'),
+            mockPaymentsEnabled
+                ? Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text(
+                      'Mode test actif: si Stripe Payment Sheet est indisponible, la commande sera finalisee en parcours de secours.',
+                    ),
+                  )
+                : const Text('Paiement securise via Stripe Payment Sheet.'),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -165,7 +178,13 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.lock),
-                label: Text(isLoading ? 'Traitement...' : 'Payer et confirmer la commande'),
+                label: Text(
+                  isLoading
+                      ? 'Traitement...'
+                      : (mockPaymentsEnabled
+                          ? 'Payer / Secours test'
+                          : 'Payer et confirmer la commande'),
+                ),
               ),
             ),
           ],
@@ -205,21 +224,24 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       await ref.read(shippingAddressProvider.notifier).save(shippingAddress);
 
       final total = ref.read(cartTotalProvider);
+      final mockPaymentsEnabled = await ref.read(paymentMockStatusProvider.future);
       final paymentIntent = await ref
           .read(checkoutProvider.notifier)
           .createPaymentIntent(total);
 
-      await stripe.Stripe.instance.initPaymentSheet(
-        paymentSheetParameters: stripe.SetupPaymentSheetParameters(
-          merchantDisplayName: 'BuyV',
-          paymentIntentClientSecret: paymentIntent.clientSecret,
-          customerId: paymentIntent.customerId,
-          customerEphemeralKeySecret: paymentIntent.ephemeralKey,
-          style: ThemeMode.light,
-        ),
-      );
+      if (!mockPaymentsEnabled) {
+        await stripe.Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: stripe.SetupPaymentSheetParameters(
+            merchantDisplayName: 'BuyV',
+            paymentIntentClientSecret: paymentIntent.clientSecret,
+            customerId: paymentIntent.customerId,
+            customerEphemeralKeySecret: paymentIntent.ephemeralKey,
+            style: ThemeMode.light,
+          ),
+        );
 
-      await stripe.Stripe.instance.presentPaymentSheet();
+        await stripe.Stripe.instance.presentPaymentSheet();
+      }
 
       final order = await ref.read(checkoutProvider.notifier).checkout(
             shippingAddress: shippingAddress,
@@ -243,9 +265,16 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       );
       context.go(orderQuery.toString());
     } on stripe.StripeException catch (error) {
-      messenger.showSnackBar(
-        SnackBar(content: Text('Paiement annule ou invalide: ${error.error.localizedMessage ?? error.error.message ?? 'Stripe error'}')),
-      );
+      final mockPaymentsEnabled = await ref.read(paymentMockStatusProvider.future);
+      if (mockPaymentsEnabled) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Stripe indisponible. Utilisez le mode secours test.')),
+        );
+      } else {
+        messenger.showSnackBar(
+          SnackBar(content: Text('Paiement annule ou invalide: ${error.error.localizedMessage ?? error.error.message ?? 'Stripe error'}')),
+        );
+      }
     } catch (error) {
       messenger.showSnackBar(
         SnackBar(content: Text('Paiement/commande impossible: $error')),

@@ -8,6 +8,11 @@ final ordersRemoteDataSourceProvider = Provider<OrdersRemoteDataSource>((ref) {
   return OrdersRemoteDataSource();
 });
 
+final paymentMockStatusProvider = FutureProvider<bool>((ref) async {
+  final dataSource = ref.watch(ordersRemoteDataSourceProvider);
+  return dataSource.isMockPaymentsEnabled();
+});
+
 final myOrdersProvider = FutureProvider<List<OrderModel>>((ref) async {
   final dataSource = ref.watch(ordersRemoteDataSourceProvider);
   return dataSource.listMyOrders();

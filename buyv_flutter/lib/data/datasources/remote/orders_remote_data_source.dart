@@ -22,6 +22,27 @@ class OrdersRemoteDataSource {
 
   final Dio _dio;
 
+  Future<bool> isMockPaymentsEnabled() async {
+    try {
+      final response = await _dio.get('/payments/mock-status');
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        final raw = data['mock_payments'];
+        if (raw is bool) {
+          return raw;
+        }
+        if (raw is num) {
+          return raw != 0;
+        }
+        final text = raw?.toString().toLowerCase().trim();
+        return text == 'true' || text == '1' || text == 'yes';
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<PaymentIntentResult> createPaymentIntent({
     required int amountCents,
     String currency = 'usd',
