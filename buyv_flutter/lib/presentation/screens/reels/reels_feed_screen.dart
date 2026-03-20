@@ -311,8 +311,8 @@ class _ReelPage extends ConsumerWidget {
 							),
 							const SizedBox(height: 8),
 							Text(
-								post.caption?.trim().isNotEmpty == true
-										? post.caption!.trim()
+								sanitizeDisplayText(post.caption)?.isNotEmpty == true
+										? sanitizeDisplayText(post.caption)!
 										: 'Aucune description',
 								style: const TextStyle(color: Colors.white),
 								maxLines: 2,
@@ -934,9 +934,10 @@ class _ProductOverlayFallback extends StatelessWidget {
 
 String _buildShareText(PostModel post) {
 	final textParts = <String>[];
+	final cleanCaption = sanitizeDisplayText(post.caption);
 
-	if (post.caption?.trim().isNotEmpty == true) {
-		textParts.add(post.caption!.trim());
+	if (cleanCaption != null && cleanCaption.isNotEmpty) {
+		textParts.add(cleanCaption);
 	}
 
 	if (post.videoUrl?.trim().isNotEmpty == true) {
@@ -946,6 +947,19 @@ String _buildShareText(PostModel post) {
 	}
 
 	return textParts.join('\n');
+}
+
+String? sanitizeDisplayText(String? input) {
+	if (input == null) {
+		return null;
+	}
+
+	final cleaned = input
+			.replaceAll('\uFFFC', ' ')
+			.replaceAll(RegExp(r'\s+'), ' ')
+			.trim();
+
+	return cleaned;
 }
 
 class _VideoSurface extends StatefulWidget {
