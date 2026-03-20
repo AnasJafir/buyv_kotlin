@@ -144,6 +144,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         // Only block admin/profile actions, not browsing
         final requiresAuth = state.matchedLocation.startsWith('/admin') ||
             state.matchedLocation.startsWith('/promoter') ||
+          state.matchedLocation == AppRoutes.addContent ||
             state.matchedLocation == AppRoutes.editProfile ||
             state.matchedLocation == AppRoutes.profile;
         if (requiresAuth) return AppRoutes.login;
