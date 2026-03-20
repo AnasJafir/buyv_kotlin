@@ -99,6 +99,10 @@ class OrderSuccessScreen extends StatelessWidget {
                   onPressed: () => context.go(AppRoutes.products),
                   child: const Text('Continuer mes achats'),
                 ),
+                TextButton(
+                  onPressed: () => context.go(AppRoutes.reels),
+                  child: const Text('Retour Reels'),
+                ),
               ],
             ),
           ),
