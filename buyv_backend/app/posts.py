@@ -7,7 +7,7 @@ from .database import get_db
 from .models import User, Post, PostLike, PostBookmark
 from .marketplace.models import MarketplaceProduct, ProductPromotion
 from .auth import get_current_user, get_current_user_optional
-from .schemas import PostOut, CountResponse, PostCreate
+from .schemas import PostOut, CountResponse, PostCreate, PostUpdateCaption
 
 router = APIRouter(prefix="/posts", tags=["posts"])
 
@@ -527,6 +527,37 @@ def delete_post(
         current_user.reels_count = max(0, (current_user.reels_count or 0) - 1)
     db.commit()
     return {"status": "deleted"}
+
+
+@router.patch("/{post_uid}", response_model=PostOut)
+def update_post_caption(
+    post_uid: str,
+    payload: PostUpdateCaption,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    post = db.query(Post).filter(Post.uid == post_uid).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not allowed")
+
+    next_caption = payload.caption.strip() if payload.caption else None
+    post.caption = next_caption if next_caption else None
+    post.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(post)
+
+    liked = db.query(PostLike).filter(
+        PostLike.user_id == current_user.id,
+        PostLike.post_id == post.id,
+    ).first() is not None
+    bookmarked = db.query(PostBookmark).filter(
+        PostBookmark.user_id == current_user.id,
+        PostBookmark.post_id == post.id,
+    ).first() is not None
+
+    return _map_post_out(post, current_user, liked=liked, bookmarked=bookmarked)
 
 
 # ── Bridge endpoint: marketplace product → post ────────────────────────────────

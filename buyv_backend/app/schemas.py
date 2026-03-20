@@ -267,6 +267,10 @@ class PostCreate(CamelModel):
     additional_data: Optional[dict] = None
 
 
+class PostUpdateCaption(CamelModel):
+    caption: Optional[str] = None
+
+
 # -------------------- Comments --------------------
 
 class CommentCreate(CamelModel):
