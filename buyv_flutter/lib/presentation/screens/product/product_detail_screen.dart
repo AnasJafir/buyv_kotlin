@@ -6,16 +6,24 @@ import 'package:go_router/go_router.dart';
 import '../../../data/models/product_models.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/marketplace_products_provider.dart';
+import '../../providers/recently_viewed_provider.dart';
 import '../../router/app_router.dart';
 
-class ProductDetailScreen extends ConsumerWidget {
+class ProductDetailScreen extends ConsumerStatefulWidget {
   const ProductDetailScreen({super.key, required this.productId});
 
   final String productId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final detailAsync = ref.watch(marketplaceProductDetailProvider(productId));
+  ConsumerState<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
+  bool _recentlyTracked = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final detailAsync = ref.watch(marketplaceProductDetailProvider(widget.productId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Detail Produit')),
@@ -23,6 +31,20 @@ class ProductDetailScreen extends ConsumerWidget {
         data: (detail) {
           if (detail == null) {
             return const Center(child: Text('Produit introuvable.'));
+          }
+
+          if (!_recentlyTracked) {
+            _recentlyTracked = true;
+            final image = (detail.mainImageUrl ?? '').trim().isNotEmpty
+                ? detail.mainImageUrl!.trim()
+                : (detail.images.isNotEmpty ? detail.images.first : null);
+            ref.read(recentlyViewedProvider.notifier).addOrUpdate(
+                  productId: detail.id,
+                  name: detail.name,
+                  price: detail.price,
+                  currency: detail.currency,
+                  imageUrl: image,
+                );
           }
 
           final gallery = {
