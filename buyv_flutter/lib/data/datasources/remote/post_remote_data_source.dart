@@ -49,4 +49,54 @@ class PostRemoteDataSource {
     );
     return PostModel.fromJson(response.data as Map<String, dynamic>);
   }
+
+  Future<PostModel> createPost(PostCreateRequest request) async {
+    final response = await _dio.post(
+      '/posts/',
+      data: <String, dynamic>{
+        'type': request.type,
+        'mediaUrl': request.mediaUrl,
+        'caption': request.caption,
+        'additionalData': request.additionalData,
+      },
+    );
+
+    final raw = response.data;
+    if (raw is! Map<String, dynamic>) {
+      throw const FormatException('Invalid post creation response.');
+    }
+    return PostModel.fromJson(raw);
+  }
+
+  Future<List<PostModel>> searchPosts({
+    required String query,
+    String? type,
+    int offset = 0,
+    int limit = 20,
+  }) async {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) {
+      return const <PostModel>[];
+    }
+
+    final response = await _dio.get(
+      '/posts/search',
+      queryParameters: <String, dynamic>{
+        'q': trimmed,
+        if (type != null && type.isNotEmpty) 'type': type,
+        'offset': offset,
+        'limit': limit,
+      },
+    );
+
+    final raw = response.data;
+    if (raw is! List) {
+      return const <PostModel>[];
+    }
+
+    return raw
+        .whereType<Map<String, dynamic>>()
+        .map(PostModel.fromJson)
+        .toList(growable: false);
+  }
 }
