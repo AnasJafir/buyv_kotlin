@@ -17,6 +17,26 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   String? _search;
   String? _categorySlug;
 
+  static const Map<String, IconData> _categoryIconBySlug = <String, IconData>{
+    'electronics': Icons.devices_outlined,
+    'fashion': Icons.checkroom_outlined,
+    'beauty': Icons.spa_outlined,
+    'home': Icons.chair_outlined,
+    'kitchen': Icons.kitchen_outlined,
+    'sports': Icons.sports_soccer_outlined,
+    'toys': Icons.toys_outlined,
+    'automotive': Icons.directions_car_outlined,
+    'jewelry': Icons.diamond_outlined,
+    'bags': Icons.shopping_bag_outlined,
+    'shoes': Icons.hiking_outlined,
+    'phone-accessories': Icons.phone_iphone_outlined,
+  };
+
+  IconData _iconForCategorySlug(String slug) {
+    final normalized = slug.trim().toLowerCase();
+    return _categoryIconBySlug[normalized] ?? Icons.category_outlined;
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -93,6 +113,10 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                       (category) => Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
+                          avatar: Icon(
+                            _iconForCategorySlug(category.slug),
+                            size: 16,
+                          ),
                           label: Text(category.name),
                           selected: _categorySlug == category.slug,
                           onSelected: (_) {
