@@ -16,7 +16,8 @@ void main() {
     );
 
     expect(find.text('PAIEMENT TEST (MOCK)'), findsOneWidget);
-    expect(find.text('Numero: ORD-123'), findsOneWidget);
+    expect(find.text('Numero de commande: ORD-123'), findsOneWidget);
+    expect(find.text('Retour aux Reels'), findsOneWidget);
   });
 
   testWidgets('OrderSuccessScreen shows live payment badge', (WidgetTester tester) async {

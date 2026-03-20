@@ -50,7 +50,7 @@ class OrderSuccessScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Numero: $orderNumber',
+                  'Numero de commande: $orderNumber',
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 6),
@@ -101,7 +101,7 @@ class OrderSuccessScreen extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: () => context.go(AppRoutes.reels),
-                  child: const Text('Retour Reels'),
+                  child: const Text('Retour aux Reels'),
                 ),
               ],
             ),
