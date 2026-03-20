@@ -97,6 +97,20 @@ class MarketplaceProductPreview {
   final String? imageUrl;
 }
 
+class MarketplaceCategoryItem {
+  const MarketplaceCategoryItem({
+    required this.id,
+    required this.name,
+    required this.slug,
+    this.iconUrl,
+  });
+
+  final String id;
+  final String name;
+  final String slug;
+  final String? iconUrl;
+}
+
 class MarketplaceRemoteDataSource {
   MarketplaceRemoteDataSource({Dio? dio}) : _dio = dio ?? ApiClient.public;
 
@@ -106,6 +120,7 @@ class MarketplaceRemoteDataSource {
     int page = 1,
     int limit = 20,
     String? search,
+    String? categorySlug,
     String sortBy = 'relevance',
   }) async {
     final response = await _dio.get(
@@ -114,6 +129,7 @@ class MarketplaceRemoteDataSource {
         'page': page,
         'limit': limit,
         'search': search?.trim().isNotEmpty == true ? search!.trim() : null,
+        if (categorySlug != null && categorySlug.trim().isNotEmpty) 'category_slug': categorySlug.trim(),
         'sort_by': sortBy,
       },
     );
@@ -158,6 +174,27 @@ class MarketplaceRemoteDataSource {
     return data
         .whereType<Map<String, dynamic>>()
         .map(_mapProductItem)
+        .toList(growable: false);
+  }
+
+  Future<List<MarketplaceCategoryItem>> getCategories() async {
+    final response = await _dio.get('/marketplace/categories');
+    final data = response.data;
+    if (data is! List) {
+      return const <MarketplaceCategoryItem>[];
+    }
+
+    return data
+        .whereType<Map<String, dynamic>>()
+        .map(
+          (json) => MarketplaceCategoryItem(
+            id: _asString(json['id']),
+            name: _sanitizeText(_asString(json['name'], fallback: 'Categorie'), fallback: 'Categorie'),
+            slug: _asString(json['slug']),
+            iconUrl: _nullableString(json['icon_url']) ?? _nullableString(json['iconUrl']),
+          ),
+        )
+        .where((item) => item.slug.trim().isNotEmpty)
         .toList(growable: false);
   }
 

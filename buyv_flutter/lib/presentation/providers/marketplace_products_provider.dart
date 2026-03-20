@@ -7,12 +7,14 @@ class MarketplaceProductsQuery {
     this.page = 1,
     this.limit = 20,
     this.search,
+    this.categorySlug,
     this.sortBy = 'relevance',
   });
 
   final int page;
   final int limit;
   final String? search;
+  final String? categorySlug;
   final String sortBy;
 
   @override
@@ -24,11 +26,12 @@ class MarketplaceProductsQuery {
         other.page == page &&
         other.limit == limit &&
         other.search == search &&
+          other.categorySlug == categorySlug &&
         other.sortBy == sortBy;
   }
 
   @override
-  int get hashCode => Object.hash(page, limit, search, sortBy);
+        int get hashCode => Object.hash(page, limit, search, categorySlug, sortBy);
 }
 
 final marketplaceProductsProvider =
@@ -38,8 +41,14 @@ final marketplaceProductsProvider =
     page: query.page,
     limit: query.limit,
     search: query.search,
+    categorySlug: query.categorySlug,
     sortBy: query.sortBy,
   );
+});
+
+final marketplaceCategoriesProvider = FutureProvider<List<MarketplaceCategoryItem>>((ref) async {
+  final dataSource = MarketplaceRemoteDataSource();
+  return dataSource.getCategories();
 });
 
 final marketplaceFeaturedProductsProvider = FutureProvider<List<MarketplaceProductItem>>((ref) async {

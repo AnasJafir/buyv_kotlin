@@ -15,6 +15,7 @@ class ProductListScreen extends ConsumerStatefulWidget {
 class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String? _search;
+  String? _categorySlug;
 
   @override
   void dispose() {
@@ -24,8 +25,13 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final query = MarketplaceProductsQuery(search: _search, limit: 24);
+    final query = MarketplaceProductsQuery(
+      search: _search,
+      categorySlug: _categorySlug,
+      limit: 24,
+    );
     final productsAsync = ref.watch(marketplaceProductsProvider(query));
+    final categoriesAsync = ref.watch(marketplaceCategoriesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -63,6 +69,43 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                   },
                 ),
               ),
+            ),
+          ),
+          SizedBox(
+            height: 46,
+            child: categoriesAsync.when(
+              data: (categories) {
+                return ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  scrollDirection: Axis.horizontal,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: const Text('Tout'),
+                        selected: _categorySlug == null,
+                        onSelected: (_) {
+                          setState(() => _categorySlug = null);
+                        },
+                      ),
+                    ),
+                    ...categories.map(
+                      (category) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(category.name),
+                          selected: _categorySlug == category.slug,
+                          onSelected: (_) {
+                            setState(() => _categorySlug = category.slug);
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
             ),
           ),
           Expanded(
