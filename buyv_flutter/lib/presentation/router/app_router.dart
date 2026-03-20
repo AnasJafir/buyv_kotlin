@@ -221,10 +221,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                   final orderId = int.tryParse(state.uri.queryParameters['orderId'] ?? '');
                   final orderNumber = state.uri.queryParameters['orderNumber'] ?? '';
                   final total = double.tryParse(state.uri.queryParameters['total'] ?? '') ?? 0.0;
+                  final paymentMode = (state.uri.queryParameters['paymentMode'] ?? '').trim().toLowerCase();
                   return OrderSuccessScreen(
                     orderId: orderId,
                     orderNumber: orderNumber,
                     total: total,
+                    isMockPayment: paymentMode == 'mock',
                   );
                 },
               ),

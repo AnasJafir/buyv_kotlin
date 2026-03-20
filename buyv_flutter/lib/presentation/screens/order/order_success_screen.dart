@@ -9,11 +9,13 @@ class OrderSuccessScreen extends StatelessWidget {
     required this.orderId,
     required this.orderNumber,
     required this.total,
+    this.isMockPayment = false,
   });
 
   final int? orderId;
   final String orderNumber;
   final double total;
+  final bool isMockPayment;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +55,25 @@ class OrderSuccessScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text('Montant: \$${total.toStringAsFixed(2)}'),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isMockPayment
+                        ? Colors.blue.withValues(alpha: 0.12)
+                        : Colors.green.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    isMockPayment ? 'PAIEMENT TEST (MOCK)' : 'PAIEMENT STRIPE CONFIRME',
+                    style: TextStyle(
+                      color: isMockPayment ? Colors.blue.shade700 : Colors.green.shade700,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 22),
                 SizedBox(
                   width: double.infinity,

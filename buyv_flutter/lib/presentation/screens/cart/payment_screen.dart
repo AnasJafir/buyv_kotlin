@@ -261,6 +261,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           'orderId': order.id.toString(),
           'orderNumber': order.orderNumber,
           'total': order.total.toStringAsFixed(2),
+          'paymentMode': mockPaymentsEnabled ? 'mock' : 'live',
         },
       );
       context.go(orderQuery.toString());
