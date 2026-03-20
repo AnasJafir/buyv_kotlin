@@ -1,8 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../data/models/product_models.dart';
+import '../../providers/cart_provider.dart';
 import '../../providers/marketplace_products_provider.dart';
+import '../../router/app_router.dart';
 
 class ProductDetailScreen extends ConsumerWidget {
   const ProductDetailScreen({super.key, required this.productId});
@@ -21,10 +25,10 @@ class ProductDetailScreen extends ConsumerWidget {
             return const Center(child: Text('Produit introuvable.'));
           }
 
-          final gallery = <String>[
+          final gallery = {
             if (detail.mainImageUrl != null) detail.mainImageUrl!,
             ...detail.images,
-          ].toSet().toList(growable: false);
+          }.toList(growable: false);
 
           return ListView(
             padding: const EdgeInsets.all(12),
@@ -85,7 +89,30 @@ class ProductDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 20),
               FilledButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  final image = (detail.mainImageUrl ?? '').trim().isNotEmpty
+                      ? detail.mainImageUrl!.trim()
+                      : (detail.images.isNotEmpty ? detail.images.first : '');
+
+                  ref.read(cartProvider.notifier).addItem(
+                        CartItem(
+                          productId: detail.id,
+                          productName: detail.name,
+                          productImage: image,
+                          price: detail.price,
+                        ),
+                      );
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Produit ajoute au panier.'),
+                      action: SnackBarAction(
+                        label: 'Voir',
+                        onPressed: () => context.go(AppRoutes.cart),
+                      ),
+                    ),
+                  );
+                },
                 icon: const Icon(Icons.shopping_cart_checkout),
                 label: const Text('Ajouter au panier'),
               ),
