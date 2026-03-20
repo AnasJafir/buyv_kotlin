@@ -7,6 +7,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../../data/datasources/remote/report_remote_data_source.dart';
 import '../../../data/models/post_models.dart';
+import '../../../core/utils/html_sanitizer.dart';
 import '../../router/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/marketplace_product_preview_provider.dart';
@@ -954,7 +955,8 @@ String? sanitizeDisplayText(String? input) {
 		return null;
 	}
 
-	final cleaned = input
+	final cleaned = HtmlSanitizer
+			.stripTags(HtmlSanitizer.removeObjectReplacementChars(input))
 			.replaceAll('\uFFFC', ' ')
 			.replaceAll(RegExp(r'\s+'), ' ')
 			.trim();

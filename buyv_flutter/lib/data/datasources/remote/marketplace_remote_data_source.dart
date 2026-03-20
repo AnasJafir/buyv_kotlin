@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../../core/utils/html_sanitizer.dart';
 import '../../../core/network/api_client.dart';
 
 class MarketplaceProductItem {
@@ -184,10 +185,12 @@ class MarketplaceRemoteDataSource {
 
     return MarketplaceProductDetail(
       id: _asString(data['id']),
-      name: name,
+      name: _sanitizeText(name, fallback: 'Produit'),
       price: _asDouble(data['selling_price']),
       currency: _asString(data['currency'], fallback: 'USD'),
-      description: _nullableString(data['description']) ?? _nullableString(data['short_description']),
+      description: _sanitizeOptionalText(
+        _nullableString(data['description']) ?? _nullableString(data['short_description']),
+      ),
       mainImageUrl: _nullableString(data['main_image_url']),
       images: images,
       averageRating: _asDouble(data['average_rating']),
@@ -256,7 +259,7 @@ class MarketplaceRemoteDataSource {
     }
 
     return MarketplaceProductPreview(
-      name: name.isEmpty ? 'Produit' : name,
+      name: _sanitizeText(name, fallback: 'Produit'),
       price: price,
       currency: currency.isEmpty ? null : currency,
       imageUrl: imageUrl.isEmpty ? null : imageUrl,
@@ -267,7 +270,7 @@ class MarketplaceRemoteDataSource {
     final name = _asString(json['name'], fallback: 'Produit');
     return MarketplaceProductItem(
       id: _asString(json['id']),
-      name: name,
+      name: _sanitizeText(name, fallback: 'Produit'),
       price: _asDouble(json['selling_price']),
       currency: _asString(json['currency'], fallback: 'USD'),
       imageUrl: _nullableString(json['main_image_url']) ?? _nullableString(json['thumbnail_url']),
@@ -286,6 +289,24 @@ class MarketplaceRemoteDataSource {
   String? _nullableString(dynamic value) {
     final text = value?.toString().trim() ?? '';
     return text.isEmpty ? null : text;
+  }
+
+  String _sanitizeText(String value, {required String fallback}) {
+    final clean = HtmlSanitizer
+        .stripTags(HtmlSanitizer.removeObjectReplacementChars(value))
+        .trim();
+    return clean.isEmpty ? fallback : clean;
+  }
+
+  String? _sanitizeOptionalText(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+
+    final clean = HtmlSanitizer
+        .stripTags(HtmlSanitizer.removeObjectReplacementChars(value))
+        .trim();
+    return clean.isEmpty ? null : clean;
   }
 
   double _asDouble(dynamic value, {double fallback = 0.0}) {

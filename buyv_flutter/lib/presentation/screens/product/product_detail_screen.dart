@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/utils/html_sanitizer.dart';
 import '../../../data/models/product_models.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/marketplace_products_provider.dart';
@@ -51,6 +52,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             if (detail.mainImageUrl != null) detail.mainImageUrl!,
             ...detail.images,
           }.toList(growable: false);
+          final sanitizedDescription = detail.description?.trim().isNotEmpty == true
+              ? HtmlSanitizer.stripTags(
+                  HtmlSanitizer.removeObjectReplacementChars(detail.description!.trim()),
+                )
+              : null;
 
           return ListView(
             padding: const EdgeInsets.all(12),
@@ -105,8 +111,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                detail.description?.trim().isNotEmpty == true
-                    ? detail.description!.trim()
+                sanitizedDescription?.isNotEmpty == true
+                    ? sanitizedDescription!
                     : 'Aucune description disponible.',
               ),
               const SizedBox(height: 20),

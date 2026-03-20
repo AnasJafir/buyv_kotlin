@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/utils/html_sanitizer.dart';
 import '../../../data/datasources/remote/admin_remote_data_source.dart';
 import '../../widgets/common/error_snackbar.dart';
 
@@ -89,10 +90,20 @@ class _AdminCjImportScreenState extends State<AdminCjImportScreen> {
                         itemCount: _results.length,
                         itemBuilder: (context, index) {
                           final item = _results[index];
+                          final title = HtmlSanitizer.stripTags(
+                            HtmlSanitizer.removeObjectReplacementChars(
+                              (item['name'] ?? item['product_name'] ?? 'Produit CJ').toString(),
+                            ),
+                          );
+                          final description = HtmlSanitizer.stripTags(
+                            HtmlSanitizer.removeObjectReplacementChars(
+                              (item['description'] ?? '').toString(),
+                            ),
+                          );
                           return Card(
                             child: ListTile(
-                              title: Text((item['name'] ?? item['product_name'] ?? 'Produit CJ').toString()),
-                              subtitle: Text((item['description'] ?? '').toString()),
+                              title: Text(title.isEmpty ? 'Produit CJ' : title),
+                              subtitle: Text(description),
                               trailing: FilledButton(
                                 onPressed: () => _importProduct(item),
                                 child: const Text('Import'),
