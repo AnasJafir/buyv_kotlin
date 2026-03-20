@@ -54,15 +54,18 @@ class AuthRemoteDataSource {
 
   Future<void> sendPasswordReset(String email) async {
     await _publicDio.post(
-      '/auth/password-reset',
+      '/auth/request-password-reset',
       data: {'email': email},
     );
   }
 
   Future<void> confirmPasswordReset(PasswordResetConfirm req) async {
     await _publicDio.post(
-      '/auth/password-reset/confirm',
-      data: req.toJson(),
+      '/auth/confirm-password-reset',
+      data: {
+        'token': req.token,
+        'new_password': req.newPassword,
+      },
     );
   }
 

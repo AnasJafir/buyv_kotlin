@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../providers/auth_provider.dart';
 import '../../router/app_router.dart';
 import '../../widgets/common/buyv_button.dart';
 import '../../widgets/common/buyv_text_field.dart';
+import '../../widgets/common/error_snackbar.dart';
 
-class ResetPasswordScreen extends StatefulWidget {
+class ResetPasswordScreen extends ConsumerStatefulWidget {
   const ResetPasswordScreen({super.key});
 
   @override
-  State<ResetPasswordScreen> createState() => _State();
+  ConsumerState<ResetPasswordScreen> createState() => _State();
 }
 
-class _State extends State<ResetPasswordScreen> {
+class _State extends ConsumerState<ResetPasswordScreen> {
   final _passCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   final _tokenCtrl = TextEditingController();
@@ -23,8 +26,36 @@ class _State extends State<ResetPasswordScreen> {
     super.dispose();
   }
 
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final ok = await ref.read(authProvider.notifier).confirmPasswordReset(
+          _tokenCtrl.text.trim(),
+          _passCtrl.text,
+        );
+    if (!mounted) {
+      return;
+    }
+
+    if (ok) {
+      context.go(AppRoutes.passwordChanged);
+      return;
+    }
+
+    final state = ref.read(authProvider);
+    if (state is AuthError) {
+      showErrorSnackbar(context, state.message);
+    } else {
+      showErrorSnackbar(context, 'Failed to reset password. Please try again.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authProvider) is AuthLoading;
+
     return Scaffold(
       appBar: AppBar(title: const Text('New Password')),
       body: Padding(
@@ -52,12 +83,8 @@ class _State extends State<ResetPasswordScreen> {
             const SizedBox(height: 32),
             BuyVButton(
               label: 'Reset Password',
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  // TODO: call API with token + new password
-                  context.go(AppRoutes.passwordChanged);
-                }
-              },
+              isLoading: isLoading,
+              onPressed: _submit,
             ),
           ]),
         ),

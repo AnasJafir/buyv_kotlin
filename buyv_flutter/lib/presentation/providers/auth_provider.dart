@@ -146,6 +146,23 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  Future<bool> confirmPasswordReset(String token, String newPassword) async {
+    state = const AuthLoading();
+    try {
+      await _dataSource.confirmPasswordReset(
+        PasswordResetConfirm(token: token, newPassword: newPassword),
+      );
+      state = const AuthGuest();
+      return true;
+    } on AppException catch (e) {
+      state = AuthError(e.message);
+      return false;
+    } catch (_) {
+      state = AuthError('Failed to reset password. Please verify your code.');
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     await _dataSource.logout();
     await TokenManager.clearTokens();
