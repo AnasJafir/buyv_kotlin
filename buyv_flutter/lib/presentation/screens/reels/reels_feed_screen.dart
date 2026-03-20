@@ -184,6 +184,17 @@ class _ReelsFeedScreenState extends ConsumerState<ReelsFeedScreen> {
 
 										ref.read(reelsFeedProvider.notifier).applyCommentsCountDelta(post.id, commentsDelta);
 									},
+									onProfileTap: () {
+										final userId = post.userId.trim();
+										if (!_isValidProfileUserId(userId)) {
+											showErrorSnackbar(context, 'Profil createur indisponible pour ce reel.');
+											return;
+										}
+
+										context.push(
+											AppRoutes.userProfile.replaceFirst(':userId', userId),
+										);
+									},
 								);
 							},
 						),
@@ -216,6 +227,15 @@ class _ReelsFeedScreenState extends ConsumerState<ReelsFeedScreen> {
 			),
 		);
 	}
+
+	bool _isValidProfileUserId(String userId) {
+		if (userId.isEmpty) {
+			return false;
+		}
+
+		const invalidValues = <String>{'unknown_user', 'unknown', 'null'};
+		return !invalidValues.contains(userId.toLowerCase());
+	}
 }
 
 class _ReelPage extends ConsumerWidget {
@@ -229,6 +249,7 @@ class _ReelPage extends ConsumerWidget {
 		required this.onShareTap,
 		required this.onCartTap,
 		required this.onCommentTap,
+		required this.onProfileTap,
 	});
 
 	final PostModel post;
@@ -239,6 +260,7 @@ class _ReelPage extends ConsumerWidget {
 	final Future<void> Function() onShareTap;
 	final Future<void> Function() onCartTap;
 	final Future<void> Function() onCommentTap;
+	final VoidCallback onProfileTap;
 
 	@override
 	Widget build(BuildContext context, WidgetRef ref) {
@@ -276,12 +298,15 @@ class _ReelPage extends ConsumerWidget {
 						crossAxisAlignment: CrossAxisAlignment.start,
 						mainAxisSize: MainAxisSize.min,
 						children: <Widget>[
-							Text(
-								'@${post.username}',
-								style: const TextStyle(
-									color: Colors.white,
-									fontWeight: FontWeight.w700,
-									fontSize: 16,
+							GestureDetector(
+								onTap: onProfileTap,
+								child: Text(
+									'@${post.username}',
+									style: const TextStyle(
+										color: Colors.white,
+										fontWeight: FontWeight.w700,
+										fontSize: 16,
+									),
 								),
 							),
 							const SizedBox(height: 8),
